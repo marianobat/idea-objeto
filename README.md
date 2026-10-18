@@ -2,15 +2,9 @@
 
 Sitio de recursos del taller (Ciclos de Creatividad, Universidad Siglo 21).
 
-## Publicar en GitHub Pages
-
-1. Subí todo el contenido de esta carpeta a la raíz del repositorio, tal como está (incluido el archivo oculto `.nojekyll`).
-2. En el repositorio: Settings › Pages › Build and deployment › Source: "Deploy from a branch", rama `main`, carpeta `/ (root)`.
-3. El sitio queda en `https://<usuario>.github.io/<repositorio>/`.
-
 ## Archivos
 
-| Archivo | Qué es |
+| Archivo | Obs. |
 |---|---|
 | `index.html` | Página principal |
 | `img/siglo21.png` | Logo |
