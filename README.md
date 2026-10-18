@@ -9,8 +9,9 @@ https://marianobat.github.io/idea-objeto/
 |---|---|
 | `index.html` | Página principal |
 | `img/siglo21.png` | Logo |
-| `motor-cantidades.html`, `motor-agentes.html` | Motores (funcionan también sin conexión) |
-| `prompt-cantidades.html`, `prompt-agentes.html` | Prompts para ChatGPT, con botón para copiar y descarga del motor |
+| `motor-viabilidad.html`, `motor-agentes.html` | Motores (funcionan también sin conexión) |
+| `prompt-viabilidad.html`, `prompt-agentes.html` | Prompts para ChatGPT, con botón para copiar y descarga del motor |
+| `motor-cantidades.html`, `prompt-cantidades.html` | Micromundo de cantidades. Está en el repositorio y no aparece en la página principal |
 | `faro-una-moda-en-el-curso.html` | Ejemplo hecho con el micromundo de agentes |
 
 ## Publicar un objeto del taller
