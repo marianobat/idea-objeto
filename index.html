@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De la idea al objeto</title>
+<link rel="icon" href="img/siglo21.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&display=swap">
+<style>
+:root{--verde:#116452;--verde-osc:#0a3d32;--gris:#595959}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--verde);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--verde);text-decoration:none}
+a:hover{color:var(--verde-osc);text-decoration:underline;text-underline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:30px 30px 48px}
+@media (max-width:600px){.wrap{padding:20px 16px 40px}}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding-bottom:12px;border-bottom:1px solid var(--verde)}
+.top img{display:block;height:44px;width:auto}
+.label{font-size:11px;line-height:13px;text-transform:uppercase;letter-spacing:.01em;font-weight:400;margin:0}
+.display{font-family:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif}
+h1{margin:96px 0 0;font-size:clamp(44px,7vw,72px);line-height:.92;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+.sub{margin:20px 0 0;font-size:17px;line-height:20px;font-weight:500}
+ul.links{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde)}
+ul.links li{border-bottom:1px solid var(--verde)}
+ul.links a{display:flex;justify-content:space-between;align-items:center;min-height:48px;font-size:16px;font-weight:700}
+.cols{margin-top:96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:48px 30px}
+.cols h2,.block h2{margin:0 0 8px}
+.block{margin-top:96px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding-top:8px;border-top:1px solid var(--verde)}
+.card{display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:160px;padding:14px;border:1px solid var(--verde)}
+.card.empty{border-style:dashed;color:var(--gris)}
+.card .t{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;font-size:20px;line-height:22px;font-weight:600}
+.refs{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde);font-size:14px;line-height:20px}
+.refs li{padding:12px 0;border-bottom:1px solid var(--verde)}
+footer{margin-top:96px;padding-top:12px;border-top:1px solid var(--verde);font-size:11px;line-height:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+<span class="label">Taller de innovación</span>
+<img src="img/siglo21.png" alt="Universidad Siglo 21">
+</header>
+
+<h1 class="display">De la idea al objeto</h1>
+<p class="sub display">Recursos para los participantes</p>
+
+<div class="cols">
+<section>
+<h2 class="label">Motores</h2>
+<ul class="links">
+<li><a href="motor-cantidades.html">Micromundo de cantidades<span aria-hidden="true">↗</span></a></li>
+<li><a href="motor-agentes.html">Micromundo de agentes<span aria-hidden="true">↗</span></a></li>
+</ul>
+</section>
+<section>
+<h2 class="label">Prompts para ChatGPT</h2>
+<ul class="links">
+<li><a href="prompt-cantidades.html">Adaptar el micromundo de cantidades<span aria-hidden="true">↗</span></a></li>
+<li><a href="prompt-agentes.html">Adaptar el micromundo de agentes<span aria-hidden="true">↗</span></a></li>
+</ul>
+</section>
+<section>
+<h2 class="label">Otros recursos</h2>
+<ul class="links">
+<li><a href="[URL]">[Recurso 1]<span aria-hidden="true">↗</span></a></li>
+<li><a href="[URL]">[Recurso 2]<span aria-hidden="true">↗</span></a></li>
+</ul>
+</section>
+</div>
+
+<section class="block">
+<h2 class="label">Objetos desarrollados en el taller</h2>
+<div class="cards">
+<a class="card" href="faro-una-moda-en-el-curso.html">
+<span class="label">Ejemplo · Micromundo de agentes</span>
+<span class="t display">Una moda en el curso<span aria-hidden="true">↗</span></span>
+</a>
+<!-- Para publicar un objeto: copiá el bloque <a class="card"> de arriba, cambiá href, equipo y título, y borrá un bloque vacío. -->
+<div class="card empty"><span class="label">[Equipo]</span><span class="t display">Próximamente</span></div>
+<div class="card empty"><span class="label">[Equipo]</span><span class="t display">Próximamente</span></div>
+<div class="card empty"><span class="label">[Equipo]</span><span class="t display">Próximamente</span></div>
+</div>
+</section>
+
+<section class="block">
+<h2 class="label">Referencias</h2>
+<ul class="refs">
+<li>Papert, S. (1980). <b>Mindstorms: Children, computers, and powerful ideas.</b> Basic Books.</li>
+<li>Harel, I. y Papert, S. (Eds.) (1991). <b>Constructionism.</b> Ablex.</li>
+<li>Turkle, S. y Papert, S. (1990). <b>Epistemological pluralism: Styles and voices within the computer culture.</b> Signs, 16(1), 128–157.</li>
+<li>Resnick, M. (2017). <b>Lifelong kindergarten: Cultivating creativity through projects, passion, peers, and play.</b> MIT Press.</li>
+</ul>
+</section>
+
+<footer>Ciclos de Creatividad · Universidad Siglo 21</footer>
+</div>
+</body>
+</html>

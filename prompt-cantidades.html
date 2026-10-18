@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptar el micromundo de cantidades</title>
+<link rel="icon" href="img/siglo21.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&display=swap">
+<style>
+:root{--verde:#116452;--verde-osc:#0a3d32;--gris:#595959}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--verde);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--verde);text-decoration:none}
+a:hover{color:var(--verde-osc);text-decoration:underline;text-underline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:30px 30px 48px}
+@media (max-width:600px){.wrap{padding:20px 16px 40px}}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding-bottom:12px;border-bottom:1px solid var(--verde)}
+.top img{display:block;height:44px;width:auto}
+.label{font-size:11px;line-height:13px;text-transform:uppercase;letter-spacing:.01em;font-weight:400;margin:0}
+.display{font-family:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif}
+h1{margin:96px 0 0;font-size:clamp(44px,7vw,72px);line-height:.92;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+.sub{margin:20px 0 0;font-size:17px;line-height:20px;font-weight:500}
+ul.links{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde)}
+ul.links li{border-bottom:1px solid var(--verde)}
+ul.links a{display:flex;justify-content:space-between;align-items:center;min-height:48px;font-size:16px;font-weight:700}
+.cols{margin-top:96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:48px 30px}
+.cols h2,.block h2{margin:0 0 8px}
+.block{margin-top:96px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding-top:8px;border-top:1px solid var(--verde)}
+.card{display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:160px;padding:14px;border:1px solid var(--verde)}
+.card.empty{border-style:dashed;color:var(--gris)}
+.card .t{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;font-size:20px;line-height:22px;font-weight:600}
+.refs{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde);font-size:14px;line-height:20px}
+.refs li{padding:12px 0;border-bottom:1px solid var(--verde)}
+footer{margin-top:96px;padding-top:12px;border-top:1px solid var(--verde);font-size:11px;line-height:13px}
+
+.back{font-size:14px}
+h1.p{margin:72px 0 0;font-size:clamp(32px,5vw,48px);line-height:1;font-weight:700;letter-spacing:-.01em}
+ol.steps{margin:30px 0 0;padding:0 0 0 20px;font-size:16px;line-height:24px;max-width:640px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border:1px solid var(--verde);background:#fff;color:var(--verde);font:inherit;font-size:15px;font-weight:700;cursor:pointer;border-radius:0}
+.btn.main{background:var(--verde);color:#fff}
+.btn:hover{text-decoration:none;background:var(--verde-osc);color:#fff;border-color:var(--verde-osc)}
+.btn:focus-visible{outline:3px solid var(--verde-osc);outline-offset:2px}
+pre{margin:30px 0 0;padding:20px;border:1px solid var(--verde);white-space:pre-wrap;word-wrap:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:20px;color:#1f2422;max-height:560px;overflow:auto}
+.msg{margin-top:10px;font-size:14px;min-height:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+<a class="back" href="index.html">← Volver a los recursos</a>
+<img src="img/siglo21.png" alt="Universidad Siglo 21">
+</header>
+
+<h1 class="p display">Adaptar el micromundo de cantidades</h1>
+<ol class="steps">
+<li>Descargá el motor <b>motor-cantidades.html</b>.</li>
+<li>Abrí un chat nuevo en ChatGPT y adjuntá ese archivo.</li>
+<li>Copiá el prompt y pegalo en el chat.</li>
+</ol>
+
+<div class="actions">
+<a class="btn" href="motor-cantidades.html" download>Descargar motor-cantidades.html</a>
+<button type="button" class="btn main" id="copy">Copiar prompt</button>
+<a class="btn" href="https://chatgpt.com" target="_blank" rel="noopener">Abrir ChatGPT ↗</a>
+</div>
+<div class="msg" id="msg" role="status"></div>
+
+<pre id="prompt">Te adjunto `motor-cantidades.html`, un simulador ya construido que funciona en el navegador sin conexión. Vas a ayudarme a adaptarlo a un caso de mi materia. Soy docente universitario y no sé programar.
+
+## Qué es el simulador y qué no podés tocar
+
+El archivo tiene dos partes:
+
+1. Un bloque de configuración en formato JSON, entre las marcas `CONFIGURACIÓN: INICIO` y `CONFIGURACIÓN: FIN`, dentro de `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;`.
+2. El motor: todo lo demás (interfaz, colores, controles, gráfico, reglas de cálculo).
+
+Solo podés cambiar el bloque de configuración. No modifiques, reescribas ni &quot;mejores&quot; ninguna línea del motor, aunque te parezca que algo podría estar mejor. No agregues controles, flujos ni campos nuevos: el motor ignora todo lo que no conoce.
+
+## Qué puede representar el motor
+
+- Una sola cantidad que se acumula (el &quot;stock&quot;), entre 0 y un máximo: agua en un embalse, células de un tejido, población, ahorro, glucosa, stock de un depósito, matrícula.
+- Una entrada que la hace subir y una salida que la hace bajar. Cada una puede ser:
+  - `&quot;fija&quot;`: la misma cantidad por unidad de tiempo (por ejemplo, 2 % por semana).
+  - `&quot;proporcional&quot;`: un porcentaje del nivel actual por unidad de tiempo (por ejemplo, se desprende el 5 % de las células por día). Cuanto más hay, más entra o sale.
+- La entrada puede variar en el tiempo (`entrada.variacion`):
+  - `&quot;constante&quot;`: siempre igual.
+  - `&quot;estacional&quot;`: sube y baja en ciclos regulares (`entrada.ciclo` indica cuántas unidades de tiempo dura un ciclo, por ejemplo 52 semanas).
+  - `&quot;irregular&quot;`: llega en pulsos al azar, como lluvias o ventas imprevisibles.
+- Dos perillas, que el alumno mueve: cuánto entra y cuánto sale. Cada una tiene de 2 a 4 opciones con nombre (por ejemplo &quot;Poco&quot;, &quot;Normal&quot;, &quot;Mucho&quot;).
+- Un botón de encendido y apagado, que el alumno toca, activa una regla de la forma: &quot;cuando el nivel está **debajo** (o **encima**) de cierto valor, la **entrada** (o la **salida**) se multiplica por un factor&quot;. Por ejemplo: &quot;si baja del 25 %, el consumo se reduce al 40 %&quot;, o &quot;si el tejido se adelgaza, la proliferación se duplica&quot;.
+- Un indicador opcional cuenta cuántas unidades de tiempo el stock estuvo en 0 (`&quot;vacio&quot;`) o en el máximo (`&quot;lleno&quot;`).
+- Un gráfico muestra el nivel en el tiempo, con la línea del umbral cuando el botón está activo. Al reiniciar, la corrida anterior queda como línea punteada para comparar.
+
+Si mi caso no es una cantidad que sube y baja, decímelo con claridad y no lo fuerces. Si es algo que se propaga entre individuos (un rumor, un contagio, una moda, una opinión), corresponde el otro motor, `motor-agentes.html`. Si mi caso necesita varias cantidades conectadas entre sí, decime cuál sería la principal y qué queda afuera, o que este motor no alcanza.
+
+## Cómo vamos a trabajar
+
+**Paso 1. Entender el caso.** Preguntame, todo en un solo mensaje y en lenguaje simple:
+- ¿Qué cantidad se acumula en tu caso, en qué unidad y hasta qué máximo?
+- ¿Qué la hace subir y qué la hace bajar?
+- ¿Eso que sube o baja depende de cuánto hay en cada momento, o es más o menos fijo?
+- ¿Hay una situación en la que algo cambia cuando el nivel llega a cierto punto (un límite, una reacción, una restricción)?
+- ¿Qué querrías que tu alumno pudiera tocar para ver qué pasa?
+
+Si en mi primer mensaje ya respondí esto, saltá al paso 2.
+
+**Paso 2. Proponerme la adaptación en castellano, antes de generar nada.** Mostrame:
+- Una tabla de dos columnas: &quot;En el simulador&quot; y &quot;En tu caso&quot; (la cantidad, la entrada, la salida, la regla del botón, la unidad de tiempo, el indicador).
+- Las reglas de mi caso, cada una en una sola frase, incluida la forma de cada flujo (fija o proporcional) y la variación de la entrada.
+- Qué va a ver el alumno cuando mueva cada perilla y qué cuando toque el botón.
+- Los números que elegiste y por qué son razonables para mi caso, en una o dos frases. Si los números son ilustrativos y no datos reales, decilo.
+- Si alguna parte de mi caso no entra en el motor, decímelo acá.
+
+Esperá mi confirmación. Si te pido cambios, corregí la propuesta y volvé a esperar.
+
+**Paso 3. Probar los números antes de generar.** Con Python, simulá la regla del motor para cada combinación de perillas, con el botón apagado y encendido:
+- en cada unidad de tiempo t: entrada = valor (fija) o nivel × valor / 100 (proporcional), multiplicada por la variación (estacional: 1 + 0.8 × sen(2π t / ciclo));
+- salida = valor (fija) o nivel × valor / 100 (proporcional);
+- si el botón está encendido y se cumple la condición, el flujo afectado se multiplica por el factor;
+- nivel nuevo = nivel + entrada − salida, sin bajar de 0 ni pasar del máximo.
+
+Revisá que mover cada perilla produzca diferencias visibles en el gráfico y que el botón cambie el resultado en al menos una combinación. Si el botón no cambia nada, o si el nivel queda pegado en 0 o en el máximo en casi todas las combinaciones, ajustá los números y contame qué cambiaste.
+
+**Paso 4. Generar el archivo.** Cuando los números funcionen:
+1. Usá Python para leer el archivo adjunto.
+2. Reemplazá únicamente el texto entre `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;` y su `&lt;/script&gt;` por la nueva configuración. Es la primera aparición de esa etiqueta en el archivo.
+3. Verificá con Python que el JSON es válido y que el resto del archivo quedó idéntico al original (por ejemplo, comparando todo lo que está fuera del bloque).
+4. Guardá el resultado con un nombre nuevo que describa el caso (por ejemplo `glucosa-en-sangre.html`) y dame el enlace de descarga.
+5. Además, mostrame el bloque JSON en un bloque de código, para que pueda pegarlo a mano en el panel &quot;Configuración&quot; del simulador si la descarga falla.
+
+No reescribas el archivo a mano ni lo muestres completo en el chat.
+
+**Paso 5. Cerrar.** Dame dos preguntas del tipo &quot;¿qué pasaría si…?&quot; que mi alumno pueda responder tocando las perillas y el botón. Nada más.
+
+## Reglas para escribir la configuración
+
+- Todos los textos en castellano rioplatense, cortos y cotidianos. Cada control tiene que entenderse con solo leerlo, sin que el docente lo explique.
+- `entrada.pregunta`, `salida.pregunta` y `boton.texto`: hasta 50 caracteres. `boton.texto` dice la regla completa: &quot;Si baja del 25 %, se restringe el consumo&quot;.
+- `entrada.nombre` y `salida.nombre`: una o dos palabras (&quot;Lluvia&quot;, &quot;Consumo&quot;). Aparecen sobre las flechas del dibujo.
+- `etiquetas`: una palabra corta por cada valor, en el mismo orden (&quot;Poco&quot;, &quot;Normal&quot;, &quot;Mucho&quot;).
+- `resumen`: tiene que incluir `{valor}`, que se reemplaza por la etiqueta elegida; se usa para rotular la corrida anterior en el gráfico.
+- `stock.unidad`: corta (&quot;%&quot;, &quot;litros&quot;, &quot;mil células&quot;). `stock.capacidad` es el máximo; `stock.inicial`, el nivel al empezar.
+- Con forma `&quot;fija&quot;`, cada valor es una cantidad por unidad de tiempo y no puede superar un cuarto del máximo. Con forma `&quot;proporcional&quot;`, cada valor es un porcentaje del nivel, hasta 50.
+- `entrada.ciclo` solo hace falta con variación `&quot;estacional&quot;`; si no, dejalo en 52.
+- `boton.umbral` va en la misma unidad que el stock, entre 0 y el máximo. `boton.factor` va de 0 a 5 y no puede ser 1: 0 corta el flujo, 0.4 lo reduce al 40 %, 2 lo duplica.
+- `indicador.cuenta`: `&quot;vacio&quot;`, `&quot;lleno&quot;` o `&quot;ninguno&quot;`. `indicador.texto` es lo que sigue al número: &quot;semanas con el embalse vacío&quot;.
+- `unidadTiempo`: en singular y con mayúscula (&quot;Día&quot;, &quot;Semana&quot;, &quot;Mes&quot;). `duracion`: cuántas unidades dura la simulación, de 20 a 240.
+
+## Ejemplo: la configuración original del archivo
+
+```json
+{
+  &quot;titulo&quot;: &quot;El embalse&quot;,
+  &quot;planteo&quot;: &quot;Un embalse abastece a una ciudad. Hoy está al 60 % de su capacidad.&quot;,
+  &quot;unidadTiempo&quot;: &quot;Semana&quot;,
+  &quot;duracion&quot;: 120,
+  &quot;stock&quot;: {
+    &quot;nombre&quot;: &quot;Agua en el embalse&quot;,
+    &quot;unidad&quot;: &quot;%&quot;,
+    &quot;capacidad&quot;: 100,
+    &quot;inicial&quot;: 60
+  },
+  &quot;contador&quot;: &quot;de la capacidad&quot;,
+  &quot;grafico&quot;: &quot;Nivel del embalse, semana a semana&quot;,
+  &quot;entrada&quot;: {
+    &quot;nombre&quot;: &quot;Lluvia&quot;,
+    &quot;pregunta&quot;: &quot;Cuánto llueve&quot;,
+    &quot;forma&quot;: &quot;fija&quot;,
+    &quot;variacion&quot;: &quot;estacional&quot;,
+    &quot;ciclo&quot;: 52,
+    &quot;valores&quot;: [1, 2, 3],
+    &quot;etiquetas&quot;: [&quot;Poco&quot;, &quot;Normal&quot;, &quot;Mucho&quot;],
+    &quot;inicial&quot;: 2,
+    &quot;resumen&quot;: &quot;llueve {valor}&quot;
+  },
+  &quot;salida&quot;: {
+    &quot;nombre&quot;: &quot;Consumo&quot;,
+    &quot;pregunta&quot;: &quot;Consumo de la ciudad&quot;,
+    &quot;forma&quot;: &quot;fija&quot;,
+    &quot;valores&quot;: [1.5, 2, 2.5],
+    &quot;etiquetas&quot;: [&quot;Bajo&quot;, &quot;Normal&quot;, &quot;Alto&quot;],
+    &quot;inicial&quot;: 2,
+    &quot;resumen&quot;: &quot;consumo {valor}&quot;
+  },
+  &quot;boton&quot;: {
+    &quot;texto&quot;: &quot;Si baja del 25 %, se restringe el consumo&quot;,
+    &quot;cuando&quot;: &quot;debajo&quot;,
+    &quot;umbral&quot;: 25,
+    &quot;afecta&quot;: &quot;salida&quot;,
+    &quot;factor&quot;: 0.4,
+    &quot;resumenEncendido&quot;: &quot;con restricción&quot;,
+    &quot;resumenApagado&quot;: &quot;sin restricción&quot;
+  },
+  &quot;indicador&quot;: {
+    &quot;cuenta&quot;: &quot;vacio&quot;,
+    &quot;texto&quot;: &quot;semanas con el embalse vacío&quot;
+  }
+}
+```
+
+Empezá por el paso 1.
+</pre>
+
+<footer>Ciclos de Creatividad · Universidad Siglo 21</footer>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('copy'), msg=document.getElementById('msg'), pre=document.getElementById('prompt');
+  function done(ok){ msg.textContent = ok ? 'Prompt copiado. Pegalo en el chat de ChatGPT.' : 'No se pudo copiar automáticamente: seleccioná el texto y copialo a mano.'; }
+  btn.addEventListener('click', function(){
+    var text = pre.textContent;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function(){done(true);}, function(){done(fallback(text));});
+    } else { done(fallback(text)); }
+  });
+  function fallback(text){
+    try {
+      var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+      var ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch(e) { return false; }
+  }
+})();
+</script>
+</body>
+</html>

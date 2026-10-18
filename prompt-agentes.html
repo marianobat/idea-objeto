@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptar el micromundo de agentes</title>
+<link rel="icon" href="img/siglo21.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&display=swap">
+<style>
+:root{--verde:#116452;--verde-osc:#0a3d32;--gris:#595959}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--verde);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--verde);text-decoration:none}
+a:hover{color:var(--verde-osc);text-decoration:underline;text-underline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:30px 30px 48px}
+@media (max-width:600px){.wrap{padding:20px 16px 40px}}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding-bottom:12px;border-bottom:1px solid var(--verde)}
+.top img{display:block;height:44px;width:auto}
+.label{font-size:11px;line-height:13px;text-transform:uppercase;letter-spacing:.01em;font-weight:400;margin:0}
+.display{font-family:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif}
+h1{margin:96px 0 0;font-size:clamp(44px,7vw,72px);line-height:.92;font-weight:700;letter-spacing:-.01em;text-transform:uppercase}
+.sub{margin:20px 0 0;font-size:17px;line-height:20px;font-weight:500}
+ul.links{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde)}
+ul.links li{border-bottom:1px solid var(--verde)}
+ul.links a{display:flex;justify-content:space-between;align-items:center;min-height:48px;font-size:16px;font-weight:700}
+.cols{margin-top:96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:48px 30px}
+.cols h2,.block h2{margin:0 0 8px}
+.block{margin-top:96px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;padding-top:8px;border-top:1px solid var(--verde)}
+.card{display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:160px;padding:14px;border:1px solid var(--verde)}
+.card.empty{border-style:dashed;color:var(--gris)}
+.card .t{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;font-size:20px;line-height:22px;font-weight:600}
+.refs{list-style:none;margin:0;padding:0;border-top:1px solid var(--verde);font-size:14px;line-height:20px}
+.refs li{padding:12px 0;border-bottom:1px solid var(--verde)}
+footer{margin-top:96px;padding-top:12px;border-top:1px solid var(--verde);font-size:11px;line-height:13px}
+
+.back{font-size:14px}
+h1.p{margin:72px 0 0;font-size:clamp(32px,5vw,48px);line-height:1;font-weight:700;letter-spacing:-.01em}
+ol.steps{margin:30px 0 0;padding:0 0 0 20px;font-size:16px;line-height:24px;max-width:640px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border:1px solid var(--verde);background:#fff;color:var(--verde);font:inherit;font-size:15px;font-weight:700;cursor:pointer;border-radius:0}
+.btn.main{background:var(--verde);color:#fff}
+.btn:hover{text-decoration:none;background:var(--verde-osc);color:#fff;border-color:var(--verde-osc)}
+.btn:focus-visible{outline:3px solid var(--verde-osc);outline-offset:2px}
+pre{margin:30px 0 0;padding:20px;border:1px solid var(--verde);white-space:pre-wrap;word-wrap:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:20px;color:#1f2422;max-height:560px;overflow:auto}
+.msg{margin-top:10px;font-size:14px;min-height:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+<a class="back" href="index.html">← Volver a los recursos</a>
+<img src="img/siglo21.png" alt="Universidad Siglo 21">
+</header>
+
+<h1 class="p display">Adaptar el micromundo de agentes</h1>
+<ol class="steps">
+<li>Descargá el motor <b>motor-agentes.html</b>.</li>
+<li>Abrí un chat nuevo en ChatGPT y adjuntá ese archivo.</li>
+<li>Copiá el prompt y pegalo en el chat.</li>
+</ol>
+
+<div class="actions">
+<a class="btn" href="motor-agentes.html" download>Descargar motor-agentes.html</a>
+<button type="button" class="btn main" id="copy">Copiar prompt</button>
+<a class="btn" href="https://chatgpt.com" target="_blank" rel="noopener">Abrir ChatGPT ↗</a>
+</div>
+<div class="msg" id="msg" role="status"></div>
+
+<pre id="prompt">Te adjunto `motor-agentes.html`, un simulador ya construido que funciona en el navegador sin conexión. Vas a ayudarme a adaptarlo a un caso de mi materia. Soy docente universitario y no sé programar.
+
+## Qué es el simulador y qué no podés tocar
+
+El archivo tiene dos partes:
+
+1. Un bloque de configuración en formato JSON, entre las marcas `CONFIGURACIÓN: INICIO` y `CONFIGURACIÓN: FIN`, dentro de `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;`.
+2. El motor: todo lo demás (interfaz, colores, controles, gráfico, reglas de cálculo).
+
+Solo podés cambiar el bloque de configuración. No modifiques, reescribas ni &quot;mejores&quot; ninguna línea del motor, aunque te parezca que algo podría estar mejor. No agregues controles, estados ni campos nuevos: el motor ignora todo lo que no conoce.
+
+## Qué puede representar el motor
+
+- 140 individuos en una grilla de 14 por 10. Cada uno tiene hasta 8 vecinos.
+- Algo se propaga entre vecinos: una noticia, una idea, una enfermedad, una moda, una opinión, una práctica.
+- Hay dos formas de propagación (`reglas.modo`), y hay que elegir una:
+  - `&quot;contagio&quot;`: cada individuo activo intenta pasárselo a algunos vecinos por unidad de tiempo. Basta un contacto. Sirve para rumores, enfermedades, información.
+  - `&quot;umbral&quot;`: cada individuo mira a sus vecinos y se suma cuando suficientes de ellos ya lo adoptaron. Sirve para modas, opiniones, normas, adopción de prácticas o tecnologías: casos en los que uno solo no alcanza para convencer.
+- Una perilla, que el alumno mueve, controla una sola cosa (`perilla.controla`):
+  - En modo contagio: `&quot;contactos&quot;` (a cuántos vecinos intenta pasárselo cada uno, de 1 a 8) o `&quot;probabilidad&quot;` (qué porcentaje de los intentos funciona, de 1 a 100).
+  - En modo umbral: `&quot;umbral&quot;` (cuántos vecinos tienen que haberlo adoptado para sumarse, de 1 a 3) o `&quot;probabilidad&quot;` (qué porcentaje de chances tiene de sumarse cada unidad de tiempo, si ya se cumple el umbral).
+- Un botón de encendido y apagado, que el alumno toca, hace que una proporción de individuos sea &quot;resistente&quot;: no lo adoptan y tampoco lo pasan. Cuando se enciende, el tablero se reinicia.
+- Solo en modo contagio, una regla fija opcional (no la toca el alumno): los activos dejan de pasarlo después de cierta cantidad de unidades de tiempo (`diasActivo`) y pasan al estado &quot;agotado&quot;. Si el caso no la necesita, va `null`. En modo umbral siempre va `null`.
+- Un gráfico muestra cuántos individuos fueron alcanzados en el tiempo. Al reiniciar, la corrida anterior queda como línea punteada para comparar.
+
+Si mi caso no es un fenómeno donde algo se propaga entre individuos cercanos, decímelo con claridad y no lo fuerces. Si es una cantidad que sube y baja con algo que entra y algo que sale (agua en un embalse, población, glucosa, ahorro, células de un tejido), corresponde el otro motor, `motor-cantidades.html`. En ese caso, explicame en dos frases por qué y terminá ahí.
+
+## Cómo vamos a trabajar
+
+**Paso 1. Entender el caso.** Preguntame, todo en un solo mensaje y en lenguaje simple:
+- ¿Qué se propaga o se adopta en tu caso, y entre quiénes?
+- ¿Alcanza con un contacto para que pase, o la persona necesita ver que varios a su alrededor ya lo hicieron?
+- ¿Qué hace que se propague más rápido o más lento?
+- ¿Qué condición podría impedir que llegue a todos?
+- ¿Qué querrías que tu alumno pudiera tocar para ver qué pasa?
+
+Si en mi primer mensaje ya respondí esto, saltá al paso 2.
+
+**Paso 2. Proponerme la adaptación en castellano, antes de generar nada.** Mostrame:
+- Qué modo elegiste (contagio o umbral) y por qué, en una frase.
+- Una tabla de dos columnas: &quot;En el simulador&quot; y &quot;En tu caso&quot; (individuos, estar activo, ser resistente, la perilla, el botón, la unidad de tiempo y, si corresponde, quedar agotado).
+- Las reglas de mi caso, cada una en una sola frase.
+- Qué va a ver el alumno cuando mueva la perilla y qué cuando toque el botón.
+- Si alguna parte de mi caso no entra en el motor, decímelo acá.
+
+Esperá mi confirmación. Si te pido cambios, corregí la propuesta y volvé a esperar.
+
+**Paso 3. Generar el archivo.** Cuando confirme:
+1. Usá la herramienta de análisis (Python) para leer el archivo adjunto.
+2. Reemplazá únicamente el texto entre `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;` y su `&lt;/script&gt;` por la nueva configuración. Es la primera aparición de esa etiqueta en el archivo.
+3. Verificá con Python que el JSON es válido y que el resto del archivo quedó idéntico al original (por ejemplo, comparando todo lo que está fuera del bloque).
+4. Guardá el resultado con un nombre nuevo que describa el caso (por ejemplo `rumor-en-el-barrio.html`) y dame el enlace de descarga.
+5. Además, mostrame el bloque JSON en un bloque de código, para que pueda pegarlo a mano en el panel &quot;Configuración&quot; del simulador si la descarga falla.
+
+No reescribas el archivo a mano ni lo muestres completo en el chat.
+
+**Paso 4. Cerrar.** Dame dos preguntas del tipo &quot;¿qué pasaría si…?&quot; que mi alumno pueda responder tocando la perilla y el botón. Nada más.
+
+## Reglas para escribir la configuración
+
+- Todos los textos en castellano rioplatense, cortos y cotidianos. Cada control tiene que entenderse con solo leerlo, sin que el docente lo explique.
+- `perilla.pregunta` y `boton.texto`: frases de hasta 50 caracteres que dicen qué hacen. Ejemplo: &quot;A cuántas personas le cuenta cada uno&quot;.
+- `perilla.resumen`: tiene que incluir `{valor}`; se usa para rotular la corrida anterior en el gráfico.
+- `boton.resumenEncendido` y `boton.resumenApagado`: las dos situaciones en pocas palabras.
+- `boton.proporcion`: entre 0.05 y 0.8. Usá 0.35 salvo que el caso pida otra cosa: por debajo de 0.3 el efecto casi no se nota.
+- `perilla.valores`: de 2 a 5 valores. `perilla.inicial` tiene que ser uno de ellos.
+- `unidadTiempo`: en singular y con mayúscula (&quot;Día&quot;, &quot;Semana&quot;, &quot;Hora&quot;). Elegila según el caso.
+- `estados.agotado`: obligatorio si `diasActivo` no es `null`; si no se usa, poné cualquier palabra.
+- Modo contagio:
+  - Si la perilla controla `&quot;contactos&quot;`, `reglas.probabilidad` fija cuánto funciona cada intento (1 = siempre). Si controla `&quot;probabilidad&quot;`, `reglas.contactosPorDia` fija a cuántos vecinos se intenta.
+  - `reglas.iniciales`: cuántos están activos al comienzo, de 1 a 5. El primero está en el centro; el resto, al azar.
+- Modo umbral:
+  - Si la perilla controla `&quot;umbral&quot;`, usá los valores `[1, 2, 3]` y `reglas.probabilidad` en 0.5. Con umbral 4 la propagación no arranca, por eso no se usa.
+  - Si la perilla controla `&quot;probabilidad&quot;`, agregá `reglas.umbral` con un valor de 1 a 3.
+  - `reglas.iniciales`: de 4 a 12; empiezan juntos en el centro. Usá 9 salvo que el caso pida otra cosa.
+  - `reglas.diasActivo` va `null`. `reglas.contactosPorDia` no se usa, pero dejalo en 1.
+
+## Ejemplo 1: modo contagio (la configuración original del archivo)
+
+```json
+{
+  &quot;titulo&quot;: &quot;El chisme en la oficina&quot;,
+  &quot;planteo&quot;: &quot;Al principio, una sola persona sabe algo.&quot;,
+  &quot;unidadTiempo&quot;: &quot;Día&quot;,
+  &quot;estados&quot;: {
+    &quot;sinContacto&quot;: &quot;No sabe&quot;,
+    &quot;activo&quot;: &quot;Ya se enteró&quot;,
+    &quot;resistente&quot;: &quot;No se lo cree&quot;,
+    &quot;agotado&quot;: &quot;Ya no lo cuenta&quot;
+  },
+  &quot;contador&quot;: &quot;ya se enteraron&quot;,
+  &quot;grafico&quot;: &quot;Cuántos saben, día a día&quot;,
+  &quot;perilla&quot;: {
+    &quot;pregunta&quot;: &quot;A cuántas personas le cuenta cada uno&quot;,
+    &quot;controla&quot;: &quot;contactos&quot;,
+    &quot;valores&quot;: [1, 2, 3, 4],
+    &quot;inicial&quot;: 1,
+    &quot;resumen&quot;: &quot;le cuenta a {valor}&quot;
+  },
+  &quot;boton&quot;: {
+    &quot;texto&quot;: &quot;Algunas personas no se lo creen&quot;,
+    &quot;proporcion&quot;: 0.35,
+    &quot;resumenEncendido&quot;: &quot;algunos no se lo creen&quot;,
+    &quot;resumenApagado&quot;: &quot;todos se lo creen&quot;
+  },
+  &quot;reglas&quot;: {
+    &quot;modo&quot;: &quot;contagio&quot;,
+    &quot;contactosPorDia&quot;: 1,
+    &quot;probabilidad&quot;: 1,
+    &quot;diasActivo&quot;: null,
+    &quot;iniciales&quot;: 1
+  }
+}
+```
+
+## Ejemplo 2: modo umbral
+
+```json
+{
+  &quot;titulo&quot;: &quot;Una moda en el curso&quot;,
+  &quot;planteo&quot;: &quot;Unos pocos estudiantes empiezan a usar algo nuevo.&quot;,
+  &quot;unidadTiempo&quot;: &quot;Día&quot;,
+  &quot;estados&quot;: {
+    &quot;sinContacto&quot;: &quot;Todavía no&quot;,
+    &quot;activo&quot;: &quot;Ya se sumó&quot;,
+    &quot;resistente&quot;: &quot;No cambia nunca&quot;,
+    &quot;agotado&quot;: &quot;—&quot;
+  },
+  &quot;contador&quot;: &quot;ya se sumaron&quot;,
+  &quot;grafico&quot;: &quot;Cuántos se sumaron, día a día&quot;,
+  &quot;perilla&quot;: {
+    &quot;pregunta&quot;: &quot;Cuántos vecinos tienen que usarlo para sumarse&quot;,
+    &quot;controla&quot;: &quot;umbral&quot;,
+    &quot;valores&quot;: [1, 2, 3],
+    &quot;inicial&quot;: 2,
+    &quot;resumen&quot;: &quot;hacen falta {valor}&quot;
+  },
+  &quot;boton&quot;: {
+    &quot;texto&quot;: &quot;Algunos no cambian nunca&quot;,
+    &quot;proporcion&quot;: 0.35,
+    &quot;resumenEncendido&quot;: &quot;con los que no cambian&quot;,
+    &quot;resumenApagado&quot;: &quot;todos pueden cambiar&quot;
+  },
+  &quot;reglas&quot;: {
+    &quot;modo&quot;: &quot;umbral&quot;,
+    &quot;contactosPorDia&quot;: 1,
+    &quot;probabilidad&quot;: 0.5,
+    &quot;diasActivo&quot;: null,
+    &quot;umbral&quot;: 2,
+    &quot;iniciales&quot;: 9
+  }
+}
+```
+
+Empezá por el paso 1.
+</pre>
+
+<footer>Ciclos de Creatividad · Universidad Siglo 21</footer>
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('copy'), msg=document.getElementById('msg'), pre=document.getElementById('prompt');
+  function done(ok){ msg.textContent = ok ? 'Prompt copiado. Pegalo en el chat de ChatGPT.' : 'No se pudo copiar automáticamente: seleccioná el texto y copialo a mano.'; }
+  btn.addEventListener('click', function(){
+    var text = pre.textContent;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function(){done(true);}, function(){done(fallback(text));});
+    } else { done(fallback(text)); }
+  });
+  function fallback(text){
+    try {
+      var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+      var ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch(e) { return false; }
+  }
+})();
+</script>
+</body>
+</html>
