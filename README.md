@@ -1,6 +1,7 @@
 # De la idea al objeto
 
 Sitio de recursos del taller (Ciclos de Creatividad, Universidad Siglo 21).
+https://marianobat.github.io/idea-objeto/
 
 ## Archivos
 
