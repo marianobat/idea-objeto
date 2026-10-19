@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Micromundo de agentes</title>
+<link rel="icon" href="img/siglo21.png">
 
 <!-- ============================================================
      CONFIGURACIÓN: INICIO
@@ -13,13 +14,13 @@
 <script id="config" type="application/json">
 {
   "titulo": "Una moda en el curso",
-  "planteo": "Unos pocos estudiantes empiezan a usar algo nuevo.",
+  "planteo": "Unos pocos estudiantes empiezan a usar algo nuevo. Después de unos días, lo dejan.",
   "unidadTiempo": "Día",
   "estados": {
     "sinContacto": "Todavía no",
     "activo": "Ya se sumó",
     "resistente": "No cambia nunca",
-    "agotado": "—"
+    "agotado": "Ya no lo usa"
   },
   "contador": "ya se sumaron",
   "grafico": "Cuántos se sumaron, día a día",
@@ -40,11 +41,33 @@
     "resumenEncendido": "con los que no cambian",
     "resumenApagado": "todos pueden cambiar"
   },
+  "inician": {
+    "pregunta": "Cuántos empiezan",
+    "valores": [
+      4,
+      9,
+      16,
+      25
+    ],
+    "inicial": 9,
+    "resumen": "empiezan {valor}"
+  },
+  "duracion": {
+    "pregunta": "Cuántos días dura la moda",
+    "valores": [
+      2,
+      4,
+      7,
+      14
+    ],
+    "inicial": 7,
+    "resumen": "dura {valor} días"
+  },
   "reglas": {
     "modo": "umbral",
     "contactosPorDia": 1,
     "probabilidad": 0.5,
-    "diasActivo": null,
+    "diasActivo": 7,
     "umbral": 2,
     "iniciales": 9
   }
@@ -129,7 +152,9 @@ header p{margin:6px 0 0; color:var(--muted); font-size:1.05rem}
 .actions button{flex:1; font:inherit; font-weight:700; font-size:1.05rem; padding:12px; border-radius:10px; cursor:pointer}
 #play{background:var(--ink); color:var(--panel); border:2px solid var(--ink)}
 #reset{background:transparent; color:var(--ink); border:2px solid var(--line)}
-button:focus-visible, textarea:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.home{display:inline-block; margin-bottom:10px; color:var(--muted); font-size:.92rem; text-decoration:underline; text-underline-offset:3px}
+.home:hover{color:var(--ink)}
+button:focus-visible, textarea:focus-visible, .home:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
 .chart-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
 .chart-head h2{font-family:var(--display); font-weight:500; font-size:1.1rem; margin:0}
 .keys{display:flex; gap:14px; flex-wrap:wrap; font-size:.85rem; color:var(--muted)}
@@ -156,6 +181,7 @@ canvas{width:100%; height:190px; display:block}
 <body>
 <div class="wrap">
   <header>
+    <a class="home" href="index.html">← Volver al inicio</a>
     <h1 id="titulo"></h1>
     <p id="planteo"></p>
   </header>
@@ -177,6 +203,10 @@ canvas{width:100%; height:190px; display:block}
         <div class="step" id="step"></div>
       </div>
       <div class="card">
+        <span class="ctl-label" id="startLabel" hidden></span>
+        <div class="dial" role="group" aria-labelledby="startLabel" id="dialStart" hidden></div>
+        <span class="ctl-label" id="daysLabel" hidden></span>
+        <div class="dial" role="group" aria-labelledby="daysLabel" id="dialDays" hidden></div>
         <span class="ctl-label" id="dialLabel"></span>
         <div class="dial" role="group" aria-labelledby="dialLabel" id="dial"></div>
         <button type="button" class="switch" id="skep" aria-pressed="false">
@@ -220,7 +250,7 @@ canvas{width:100%; height:190px; display:block}
   // ===== Motor. No hace falta modificar nada de acá para abajo. =====
   const PRISTINE = '<!doctype html>\n' + document.documentElement.outerHTML;
   const ORIGINAL_TEXT = document.getElementById('config').textContent.trim();
-  const COLS=14, ROWS=10, N=COLS*ROWS, TICK=280, MAX_STEPS=120;
+  const COLS=14, ROWS=14, N=COLS*ROWS, TICK=280, MAX_STEPS=120;
   const START=Math.floor(ROWS/2)*COLS+Math.floor(COLS/2)-1;
   const $=id=>document.getElementById(id);
 
@@ -254,18 +284,29 @@ canvas{width:100%; height:190px; display:block}
     if(typeof b.proporcion!=='number'||b.proporcion<0.05||b.proporcion>0.8) e.push('"boton.proporcion" tiene que estar entre 0.05 y 0.8.');
     if(!isText(b.resumenEncendido,50)||!isText(b.resumenApagado,50)) e.push('Faltan "boton.resumenEncendido" o "boton.resumenApagado".');
     if(modo==='umbral' && p.controla!=='umbral' && !(Number.isInteger(r.umbral)&&r.umbral>=1&&r.umbral<=3)) e.push('En modo "umbral", si la perilla no controla el umbral, "reglas.umbral" va de 1 a 3.');
-    if(modo==='umbral' && r.diasActivo!==null && r.diasActivo!==undefined) e.push('En modo "umbral", "reglas.diasActivo" tiene que ser null.');
+    if(modo==='umbral' && !c.duracion && r.diasActivo!=null) e.push('En modo "umbral", "reglas.diasActivo" tiene que ser null.');
     if(!Number.isInteger(r.contactosPorDia)||r.contactosPorDia<1||r.contactosPorDia>8) e.push('"reglas.contactosPorDia" va de 1 a 8.');
     if(typeof r.probabilidad!=='number'||r.probabilidad<=0||r.probabilidad>1) e.push('"reglas.probabilidad" va de 0 a 1 (1 = siempre).');
     if(r.diasActivo!==null && !(Number.isInteger(r.diasActivo)&&r.diasActivo>=1&&r.diasActivo<=30)) e.push('"reglas.diasActivo" es null o un entero de 1 a 30.');
     if(r.diasActivo!==null && !isText(s.agotado,40)) e.push('Si hay "diasActivo", falta "estados.agotado".');
     if(modo==='contagio' && (!Number.isInteger(r.iniciales)||r.iniciales<1||r.iniciales>5)) e.push('En modo "contagio", "reglas.iniciales" va de 1 a 5.');
     if(modo==='umbral' && (!Number.isInteger(r.iniciales)||r.iniciales<4||r.iniciales>12)) e.push('En modo "umbral", "reglas.iniciales" va de 4 a 12.');
+    function dialOk(obj,name,pred,rango){
+      if(obj==null) return;
+      if(typeof obj!=='object'){e.push('"'+name+'" no tiene el formato esperado.');return;}
+      if(!isText(obj.pregunta,60)) e.push('Falta "'+name+'.pregunta" (hasta 60 caracteres).');
+      if(!Array.isArray(obj.valores)||obj.valores.length<2||obj.valores.length>5||!obj.valores.every(pred)) e.push('"'+name+'.valores" tiene que ser una lista de 2 a 5 números: '+rango+'.');
+      else if(!obj.valores.includes(obj.inicial)) e.push('"'+name+'.inicial" tiene que ser uno de sus valores.');
+      if(!isText(obj.resumen,50)||obj.resumen.indexOf('{valor}')<0) e.push('"'+name+'.resumen" tiene que incluir {valor}.');
+    }
+    dialOk(c.inician,'inician',v=>Number.isInteger(v)&&(modo==='umbral'?v>=4&&v<=36:v>=1&&v<=5),modo==='umbral'?'enteros de 4 a 36':'enteros de 1 a 5');
+    dialOk(c.duracion,'duracion',v=>Number.isInteger(v)&&v>=1&&v<=30,'enteros de 1 a 30');
+    if(c.duracion && !isText(s.agotado,40)) e.push('Si hay "duracion", falta "estados.agotado".');
     return e;
   }
 
   // ---- Estado de la simulación ----
-  let C, state, heard, since, series, step, timer=null, val, skeptics=false, prev=null, done=false;
+  let C, state, heard, since, series, step, timer=null, val, nStart, days, skeptics=false, prev=null, done=false;
   const gridEl=$('grid'), cells=[];
   for(let i=0;i<N;i++){const d=document.createElement('div');d.className='desk';const p=document.createElement('div');p.className='p';d.appendChild(p);gridEl.appendChild(d);cells.push(p);}
   $('total').textContent=N;
@@ -288,15 +329,15 @@ canvas{width:100%; height:190px; display:block}
   function setup(){
     state=new Array(N).fill(0); heard=new Array(N).fill(false); since=new Array(N).fill(0);
     // En modo umbral los iniciales forman un grupo; en contagio, el primero está en el centro y el resto al azar
-    const cluster=modo()==='umbral'?NEAR.slice(0,C.reglas.iniciales):[START];
+    const cluster=modo()==='umbral'?NEAR.slice(0,nStart):[START];
     if(skeptics){
       do{ for(let i=0;i<N;i++) state[i]=(!cluster.includes(i)&&Math.random()<C.boton.proporcion)?2:0; }
       while(modo()==='contagio' && nbs[START].filter(j=>state[j]===0).length<3);
     }
     const seeds=cluster.slice();
-    if(modo()==='contagio' && C.reglas.iniciales>1){
+    if(modo()==='contagio' && nStart>1){
       const pool=shuffle([...Array(N).keys()].filter(i=>i!==START&&state[i]===0));
-      seeds.push(...pool.slice(0,C.reglas.iniciales-1));
+      seeds.push(...pool.slice(0,nStart-1));
     }
     seeds.forEach(i=>state[i]=1);
     step=0; done=false; series=[seeds.length];
@@ -335,8 +376,8 @@ canvas{width:100%; height:190px; display:block}
         else if(state[j]===2)heard[j]=true;
       });
     }
-    if(C.reglas.diasActivo!==null){
-      for(let i=0;i<N;i++) if(state[i]===1){since[i]++; if(since[i]>=C.reglas.diasActivo) state[i]=3;}
+    if(days!=null){
+      for(let i=0;i<N;i++) if(state[i]===1){since[i]++; if(since[i]>=days) state[i]=3;}
     }
     fresh.forEach(j=>{state[j]=1;since[j]=0;});
     step++; series.push(reached());
@@ -347,7 +388,33 @@ canvas{width:100%; height:190px; display:block}
   function start(){if(done)return;timer=setInterval(tick,TICK);$('play').textContent='Pausa';}
   function stop(){clearInterval(timer);timer=null;if(!done)$('play').textContent=step?'Seguir':'Empezar';}
   function updateNumbers(){$('n').textContent=reached();$('step').textContent=C.unidadTiempo+' '+step;}
-  function label(){return C.perilla.resumen.replace('{valor}',fmt(val))+' · '+(skeptics?C.boton.resumenEncendido:C.boton.resumenApagado);}
+  function label(){
+    const bits=[];
+    if(C.inician) bits.push(C.inician.resumen.replace('{valor}',String(nStart)));
+    if(C.duracion) bits.push(C.duracion.resumen.replace('{valor}',String(days)));
+    bits.push(C.perilla.resumen.replace('{valor}',fmt(val)));
+    bits.push(skeptics?C.boton.resumenEncendido:C.boton.resumenApagado);
+    return bits.join(' · ');
+  }
+  function mountDial(el,labelId,spec,current,format,onChange){
+    const label=$(labelId);
+    if(!spec){el.hidden=true; label.hidden=true; el.innerHTML=''; return;}
+    el.hidden=false; label.hidden=false;
+    label.textContent=spec.pregunta;
+    el.innerHTML='';
+    spec.valores.forEach(v=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.textContent=format(v);
+      b.setAttribute('aria-pressed',v===current?'true':'false');
+      b.addEventListener('click',()=>{
+        if(b.getAttribute('aria-pressed')==='true') return;
+        el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+        onChange(v);
+      });
+      el.appendChild(b);
+    });
+  }
   function archive(){
     if(series&&series.length>1){prev={series:series.slice(),label:label()};
       $('keyPrev').hidden=false; $('prevLabel').textContent='Anterior: '+prev.label;}
@@ -355,20 +422,21 @@ canvas{width:100%; height:190px; display:block}
 
   // ---- Aplicar textos de la configuración a la interfaz ----
   function apply(cfg){
-    stop(); C=cfg; val=C.perilla.inicial; skeptics=false; prev=null;
+    stop(); C=cfg; val=C.perilla.inicial;
+    nStart=C.inician?C.inician.inicial:C.reglas.iniciales;
+    days=C.duracion?C.duracion.inicial:(C.reglas.diasActivo==null?null:C.reglas.diasActivo);
+    skeptics=false; prev=null;
     document.title=C.titulo;
     $('titulo').textContent=C.titulo; $('planteo').textContent=C.planteo;
     $('lgIdle').textContent=C.estados.sinContacto; $('lgTold').textContent=C.estados.activo;
     $('lgSkep').textContent=C.estados.resistente;
-    $('legSpent').hidden=C.reglas.diasActivo===null; $('lgSpent').textContent=C.estados.agotado||'';
+    $('legSpent').hidden=days==null; $('lgSpent').textContent=C.estados.agotado||'';
     $('contador').textContent=C.contador; $('grafico').textContent=C.grafico;
-    $('dialLabel').textContent=C.perilla.pregunta; $('botonTexto').textContent=C.boton.texto;
+    $('botonTexto').textContent=C.boton.texto;
     $('skep').setAttribute('aria-pressed','false'); $('keyPrev').hidden=true;
-    const dial=$('dial'); dial.innerHTML='';
-    C.perilla.valores.forEach((v,i)=>{const b=document.createElement('button');b.type='button';b.id='v'+i;
-      b.textContent=fmt(v); b.setAttribute('aria-pressed',v===val?'true':'false');
-      b.addEventListener('click',()=>{val=v;dial.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));});
-      dial.appendChild(b);});
+    mountDial($('dialStart'),'startLabel',C.inician,nStart,v=>String(v),v=>{stop();archive();nStart=v;setup();});
+    mountDial($('dialDays'),'daysLabel',C.duracion,days,v=>String(v),v=>{stop();archive();days=v;setup();});
+    mountDial($('dial'),'dialLabel',C.perilla,val,fmt,v=>{val=v;});
     setup();
   }
 

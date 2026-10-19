@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Micromundo de agentes</title>
+<link rel="icon" href="img/siglo21.png">
 
 <!-- ============================================================
      CONFIGURACIÓN: INICIO
@@ -124,7 +125,9 @@ header p{margin:6px 0 0; color:var(--muted); font-size:1.05rem}
 .actions button{flex:1; font:inherit; font-weight:700; font-size:1.05rem; padding:12px; border-radius:10px; cursor:pointer}
 #play{background:var(--ink); color:var(--panel); border:2px solid var(--ink)}
 #reset{background:transparent; color:var(--ink); border:2px solid var(--line)}
-button:focus-visible, textarea:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.home{display:inline-block; margin-bottom:10px; color:var(--muted); font-size:.92rem; text-decoration:underline; text-underline-offset:3px}
+.home:hover{color:var(--ink)}
+button:focus-visible, textarea:focus-visible, .home:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
 .chart-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
 .chart-head h2{font-family:var(--display); font-weight:500; font-size:1.1rem; margin:0}
 .keys{display:flex; gap:14px; flex-wrap:wrap; font-size:.85rem; color:var(--muted)}
@@ -151,6 +154,7 @@ canvas{width:100%; height:190px; display:block}
 <body>
 <div class="wrap">
   <header>
+    <a class="home" href="index.html">← Volver al inicio</a>
     <h1 id="titulo"></h1>
     <p id="planteo"></p>
   </header>

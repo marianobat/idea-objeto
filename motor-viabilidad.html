@@ -255,6 +255,16 @@ h1 {
   font-size: 15.5px;
   line-height: 1.6;
 }
+.home {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: .9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.home:hover { color: var(--ink); }
+.home:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .btn {
   display: inline-block;
   align-self: flex-start;
@@ -616,6 +626,7 @@ h1 {
 </head>
 <body>
 <div class="wrap">
+  <a class="home" href="index.html">← Volver al inicio</a>
   <header class="top">
     <div>
       <p class="eyebrow" id="eyebrow"></p>
