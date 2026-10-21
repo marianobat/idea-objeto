@@ -59,6 +59,7 @@ pre{margin:30px 0 0;padding:20px;border:1px solid var(--verde);white-space:pre-w
 <li>Descargá el motor <b>motor-viabilidad.html</b>.</li>
 <li>Abrí un chat nuevo en ChatGPT y adjuntá ese archivo.</li>
 <li>Copiá el prompt y pegalo en el chat.</li>
+<li>Respondé las preguntas con el caso que ya pensaste.</li>
 </ol>
 
 <div class="actions">
@@ -68,250 +69,41 @@ pre{margin:30px 0 0;padding:20px;border:1px solid var(--verde);white-space:pre-w
 </div>
 <div class="msg" id="msg" role="status"></div>
 
-<pre id="prompt">Te adjunto `motor-viabilidad.html`, un simulador ya construido que funciona en el navegador sin conexión. Vas a ayudarme a adaptarlo a un caso de mi materia. Soy docente universitario y no sé programar.
+<pre id="prompt">Voy a armar un simulador para mi clase. Soy docente universitario y no sé programar. Ya pensé el caso: las variables, cómo se relacionan y qué puede tocar el alumno. Necesito que lo conviertas en un simulador sin cambiar mi diseño.
 
-## Qué es el simulador y qué no podés tocar
+PASO 1. Preguntas.
+Hacéme estas preguntas, todas en un solo mensaje y tal cual están:
+1. ¿Qué decisión o situación va a explorar tu alumno?
+2. ¿Qué 2 o 3 cosas puede mover el alumno? Para cada una, ¿qué significa tener poco y qué significa tener mucho?
+3. ¿Qué 2 o 3 resultados querés que vea cambiar? Para cada uno, ¿conviene que suba o que baje?
+4. Cuando el alumno sube cada una de las cosas que puede mover, ¿qué resultados suben, cuáles bajan y cuáles no cambian? Si alguno sube o baja mucho, aclaralo.
+5. ¿Hay combinaciones que lleven a un final claro, bueno o malo? Por ejemplo: "si hay mucha tecnología y poca participación, el proyecto fracasa". Para cada una, ¿qué pregunta querés que se haga el alumno?
+6. ¿Qué deja afuera tu modelo?
 
-El archivo tiene dos partes:
+PASO 2. Confirmar.
+Con mis respuestas, mostrame una tabla en lenguaje simple: qué se mueve, qué se mide, qué sube o baja con qué, y cada final con su condición. Avisame si encontrás alguno de estos problemas:
+- una cosa que se mueve pero no afecta ningún resultado;
+- un final que ninguna combinación puede producir;
+- dos finales que pueden darse al mismo tiempo.
+No agregues nada que yo no haya dicho. Esperá mi confirmación.
 
-1. Un bloque de configuración en formato JSON, entre las marcas `CONFIGURACIÓN: INICIO` y `CONFIGURACIÓN: FIN`, dentro de `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;`.
-2. El motor: todo lo demás (interfaz, colores, controles, medidores, reglas de cálculo y el bloque `&lt;script id=&quot;defaultConfig&quot;&gt;`).
+PASO 3. Construir.
+Hacé un único archivo HTML que funcione en el navegador sin conexión, con todos los textos en castellano rioplatense:
+- Un deslizador de 1 a 10 por cada cosa que el alumno mueve, con el texto de "poco" y el de "mucho" en los extremos.
+- Un medidor de 0 a 100 por cada resultado, calculado así:
+  - pesos: sube mucho = 2, sube = 1, no cambia = 0, baja = −1, baja mucho = −2;
+  - cada deslizador aporta su peso por (posición − 5,5) / 4,5;
+  - resultado = 50 + escala × suma de los aportes, con escala = 50 / suma de los valores absolutos de los pesos de ese resultado.
+  Si conviene que un resultado esté bajo, que el color del medidor lo indique.
+- "Mucho" es 7 o más y "poco" es 4 o menos, salvo que yo haya dado otro número.
+- Un recuadro con el final que se cumple. Si se cumplen varios, gana el primero que te di. Si no se cumple ninguno, mostrá "Zona intermedia" y nombrá el deslizador que más perjudica a los resultados.
+- Un botón "Cómo funciona el modelo" que muestre las relaciones, las condiciones de cada final y lo que el modelo deja afuera. Estos textos tienen que generarse a partir de los mismos datos que usa el cálculo, no escribirse aparte.
+Antes de entregarlo, probá con Python que cada final se puede alcanzar, y decime una combinación de deslizadores que lo produzca.
 
-Solo podés cambiar el bloque `id=&quot;config&quot;`. No modifiques, reescribas ni &quot;mejores&quot; ninguna línea del motor, aunque te parezca que algo podría estar mejor. No agregues palancas, medidores ni campos nuevos: el motor ignora lo que no conoce y rechaza una configuración con otra forma.
+PASO 4. Entregar.
+Dame el enlace de descarga y dos preguntas del tipo "¿qué pasaría si…?" que el alumno pueda responder moviendo los deslizadores. Nada más.
 
-## Qué puede representar el motor
-
-Tres decisiones de diseño, cada una de 1 a 10, y el resultado de combinarlas:
-
-- `tech`: cuanto más alto, más compleja o exigente es la solución, y más le cuesta a quien la recibe sostenerla.
-- `part`: cuanto más alto, más participa quien la recibe en las decisiones.
-- `time`: cuanto más alto, más tiempo de acompañamiento hay antes de retirarse.
-
-Esas tres palancas no se pueden sacar, renombrar en el `id` ni invertir de sentido. Si en mi caso &quot;más tecnología&quot; fuera algo bueno, o si necesitara una cuarta decisión, este motor no sirve: decímelo y no lo fuerces.
-
-El motor elige un estado, en este orden, y no se puede cambiar:
-
-1. Tecnología mayor a 7 y participación menor a 4: `elefante`.
-2. Participación de 7 o más y tiempo menor a 3: `parche`.
-3. Tecnología de 1 a 5, participación mayor a 7 y tiempo mayor a 7: `ideal`.
-4. Participación menor a 4: `impuesto`.
-5. Tecnología de 6 o más y participación de 4 o más: `exigente`.
-6. Tecnología de 1 a 5 y participación mayor a 7: `consolidacion`.
-7. Si no entra en ninguno: `construccion`. El texto sale de la palanca más débil. Se compara participación `(P−1)/9`, tiempo `(D−1)/9` y simplicidad tecnológica `1−(T−1)/9`. Gana el número más bajo. Si empatan, participación antes que tiempo, y tiempo antes que tecnología.
-
-También calcula tres medidores de 0 a 100: riesgo de fracaso (`risk`, un valor alto es malo), adopción (`adoption`) y sostenibilidad (`sustain`). Las fórmulas y los colores de esos medidores son fijos. `inverso` no se cambia: en riesgo es `true` y en los otros dos es `false`.
-
-Lo que sí se reescribe es el relato: títulos, nombres de las palancas, frases de cada nivel, diagnósticos, preguntas, marco teórico. El ejemplo del archivo habla de proyectos de acción social. En otra materia pueden ser otros actores (pacientes, estudiantes, un barrio, un equipo de trabajo), siempre que las tres palancas conserven el sentido de arriba.
-
-Si mi caso es algo que se propaga entre individuos (un rumor, un contagio, una moda, una opinión), corresponde el otro motor, `motor-agentes.html`. Si es una sola cantidad que sube y baja (agua, población, glucosa, ahorro), corresponde `motor-cantidades.html`. En esos casos, explicame en dos frases por qué y terminá ahí.
-
-## Cómo vamos a trabajar
-
-**Paso 1. Entender el caso.** Preguntame, todo en un solo mensaje y en lenguaje simple:
-- ¿Qué proyecto o solución van a evaluar tus alumnos?
-- ¿Quiénes tendrían que apropiársela y sostenerla cuando el equipo se retire?
-- ¿Qué cuenta, en tu materia, como &quot;más complejo&quot;, como &quot;más participación&quot; y como &quot;más tiempo de acompañamiento&quot;?
-- ¿Qué querrías que discutan al mover cada palanca?
-
-Si en mi primer mensaje ya respondí esto, saltá al paso 2.
-
-**Paso 2. Proponerme la adaptación en castellano, antes de generar nada.** Mostrame:
-- Una tabla de dos columnas: &quot;En el simulador&quot; y &quot;En tu caso&quot; (las tres palancas, los seis estados y la zona intermedia).
-- Cómo se lee cada palanca en 1 y en 10, en una frase cada una.
-- Qué va a ver el alumno al cruzar cada estado, en una frase.
-- Si alguna parte de mi caso no entra en el motor, decímelo acá.
-
-Esperá mi confirmación. Si te pido cambios, corregí la propuesta y volvé a esperar.
-
-**Paso 3. Revisar que los textos coincidan con las reglas fijas.** Antes de generar, comprobá que el diagnóstico y la pregunta de cada estado describan exactamente la regla que el motor ya aplica. No cambies umbrales para que el caso &quot;encaje&quot; mejor. Si un texto contradice la regla, reescribí el texto. Recorré al menos estas combinaciones y decime qué estado corresponde:
-- tecnología 10, participación 2, tiempo 5
-- tecnología 3, participación 9, tiempo 1
-- tecnología 3, participación 9, tiempo 9
-- tecnología 3, participación 2, tiempo 5
-- tecnología 8, participación 6, tiempo 5
-- tecnología 3, participación 9, tiempo 5
-- tecnología 5, participación 5, tiempo 5
-
-**Paso 4. Generar el archivo.** Cuando los textos cierren:
-1. Usá Python para leer el archivo adjunto.
-2. Reemplazá únicamente el texto entre `&lt;script id=&quot;config&quot; type=&quot;application/json&quot;&gt;` y su `&lt;/script&gt;`. Es la primera aparición de esa etiqueta. No toques `id=&quot;defaultConfig&quot;`.
-3. Verificá con Python que el JSON es válido y que el resto del archivo quedó idéntico al original.
-4. Guardá el resultado con un nombre nuevo que describa el caso y dame el enlace de descarga.
-5. Además, mostrame el bloque JSON en un bloque de código, para que pueda pegarlo a mano en el panel &quot;Configuración&quot; del simulador si la descarga falla.
-
-No reescribas el archivo a mano ni lo muestres completo en el chat.
-
-**Paso 5. Cerrar.** Dame dos preguntas del tipo &quot;¿qué pasaría si…?&quot; que mi alumno pueda responder moviendo las palancas. Nada más.
-
-## Reglas para escribir la configuración
-
-- Todos los textos en castellano rioplatense, cortos y cotidianos. Cada control tiene que entenderse con solo leerlo.
-- Los `id` quedan así: `tech`, `part`, `time`, `risk`, `adoption`, `sustain`, y las claves de `estados` (`elefante`, `parche`, `ideal`, `impuesto`, `exigente`, `consolidacion`). No las traduzcas.
-- `controles` va en ese orden: tech, part, time. `medidores` va en ese orden: risk, adoption, sustain.
-- Cada palanca tiene `niveles`: de 2 a 6 escalones, con `hasta` entero de 1 a 10, en orden creciente, y el último `hasta` es 10. `texto` describe ese tramo.
-- `inicial.tech`, `inicial.part` e `inicial.time` son enteros de 1 a 10.
-- `tone` solo puede ser `bad`, `warn`, `good` o `info`.
-- Límites: `titulo` 100, `eyebrow` 90, `bajada` 240, `botonTeoria` 40, `controlesTitulo` y `dashboardTitulo` 80, `controlesNota` y `dashboardNota` 60, `label` 50, `low` y `high` 80, `niveles.texto` 160, `medidores.label` 50, `medidores.sub` 90, `title` 80, `tag` 50, `diagnosis` 450, `reflection` 280, `teoria.titulo` 100, `teoria.intro` 550, `principios` de 1 a 6 (`titulo` 80, `texto` 550), `solucionismo` 750, `reglas` de 1 a 8 (`nombre` 60, `condicion` 160), `teoria.nota` 350.
-- En `teoria.reglas`, las condiciones que escribas tienen que coincidir con las reglas fijas del motor. No inventes otros umbrales.
-- `inverso` queda en `true` solo para `risk`.
-
-## Ejemplo: la configuración original del archivo
-
-```json
-{
-  "titulo": "Simulador de Viabilidad para Proyectos de Acción Social",
-  "eyebrow": "Acción social · Simulador de decisiones de diseño",
-  "bajada": "Ajusta las tres decisiones de diseño del equipo y observa cómo responde el terreno.",
-  "botonTeoria": "Ver Marco Teórico",
-  "controlesTitulo": "Controles de diseño",
-  "controlesNota": "Decisiones del equipo",
-  "dashboardTitulo": "Dashboard de viabilidad en terreno",
-  "dashboardNota": "Se actualiza en vivo",
-  "inicial": { "tech": 5, "part": 5, "time": 5 },
-  "controles": [
-    {
-      "id": "tech",
-      "label": "Complejidad tecnológica",
-      "low": "Materiales reciclados y bajo costo",
-      "high": "Alta tecnología, app o IoT",
-      "niveles": [
-        { "hasta": 3, "texto": "Materiales reciclados y de bajo costo, reparables en el barrio" },
-        { "hasta": 6, "texto": "Electrónica simple y componentes de fácil reposición" },
-        { "hasta": 8, "texto": "Dispositivos y software a medida, con soporte técnico" },
-        { "hasta": 10, "texto": "App, sensores e IoT con conectividad permanente" }
-      ]
-    },
-    {
-      "id": "part",
-      "label": "Participación comunitaria",
-      "low": "Diseñado en el laboratorio e impuesto",
-      "high": "Co-creado 100% con los vecinos",
-      "niveles": [
-        { "hasta": 3, "texto": "Diseñado en el laboratorio e impuesto a la comunidad" },
-        { "hasta": 6, "texto": "Se consulta a los vecinos, pero decide el equipo" },
-        { "hasta": 8, "texto": "Las decisiones se comparten con los vecinos" },
-        { "hasta": 10, "texto": "Co-creado con los vecinos desde el diagnóstico" }
-      ]
-    },
-    {
-      "id": "time",
-      "label": "Inversión de tiempo en terreno",
-      "low": "Intervención rápida o visita única",
-      "high": "Acompañamiento a largo plazo",
-      "niveles": [
-        { "hasta": 2, "texto": "Intervención rápida o visita única" },
-        { "hasta": 5, "texto": "Un ciclo corto con algunas visitas" },
-        { "hasta": 7, "texto": "Presencia sostenida durante varios meses" },
-        { "hasta": 10, "texto": "Acompañamiento a largo plazo, con traspaso gradual" }
-      ]
-    }
-  ],
-  "medidores": [
-    { "id": "risk", "label": "Riesgo de fracaso", "sub": "Probabilidad de que el proyecto se detenga", "inverso": true },
-    { "id": "adoption", "label": "Adopción cultural", "sub": "Grado en que la comunidad lo hace suyo", "inverso": false },
-    { "id": "sustain", "label": "Sostenibilidad a largo plazo", "sub": "Capacidad de seguir sin el equipo externo", "inverso": false }
-  ],
-  "estados": {
-    "elefante": {
-      "emoji": "🛑",
-      "title": "Fracaso por Rechazo Tecnológico",
-      "tone": "bad",
-      "tag": "Colapso del proyecto",
-      "diagnosis": "La solución llegó terminada desde afuera y exige conectividad, equipos y conocimientos que la comunidad no tiene ni pidió. Nadie la siente propia, nadie puede repararla y el proyecto se abandona.",
-      "reflection": "¿De qué sirve una app increíble si la comunidad no tiene datos móviles ni fue consultada sobre sus necesidades reales?"
-    },
-    "parche": {
-      "emoji": "🍂",
-      "title": "Abandono Temprano",
-      "tone": "warn",
-      "tag": "Pérdida de continuidad",
-      "diagnosis": "El equipo escuchó a los vecinos y ganó su confianza, pero el acompañamiento terminó antes de que la comunidad pudiera apropiarse del proyecto y sostenerlo por su cuenta.",
-      "reflection": "Construyeron confianza, pero al retirarse rápido el proyecto perdió continuidad."
-    },
-    "ideal": {
-      "emoji": "🌱🤝",
-      "title": "Adopción Comunitaria Exitosa",
-      "tone": "good",
-      "tag": "Innovación social sostenible",
-      "diagnosis": "La tecnología es simple, las decisiones se tomaron junto a los vecinos y el acompañamiento dura lo suficiente para que el proyecto se apropie, se repare localmente y continúe cuando el equipo se retire.",
-      "reflection": "¿Quién puede arreglar esta solución dentro de la comunidad cuando algo falle, sin depender del equipo universitario?"
-    },
-    "impuesto": {
-      "emoji": "🧳",
-      "title": "Solución Impuesta",
-      "tone": "bad",
-      "tag": "Alto riesgo de abandono",
-      "diagnosis": "Aunque la tecnología sea accesible, el diseño se decidió sin los vecinos. Sin participación no hay apropiación, y el proyecto solo funciona mientras el equipo externo está presente.",
-      "reflection": "¿Qué necesidad de la comunidad resolvía realmente este proyecto y quién la definió?"
-    },
-    "exigente": {
-      "emoji": "⚙️",
-      "title": "Tecnología Exigente",
-      "tone": "warn",
-      "tag": "Costo de mantenimiento elevado",
-      "diagnosis": "Hay participación, pero la complejidad técnica suma costos de mantenimiento, repuestos y conectividad que la comunidad tendría que sostener por su cuenta.",
-      "reflection": "¿Existe una versión más simple de esta solución que la comunidad pueda mantener con recursos locales?"
-    },
-    "consolidacion": {
-      "emoji": "🌿",
-      "title": "Promesa en Consolidación",
-      "tone": "info",
-      "tag": "Buen rumbo, falta tiempo",
-      "diagnosis": "La tecnología es apropiada y la co-creación es sólida. Falta más tiempo de acompañamiento para que la comunidad asuma el proyecto como propio.",
-      "reflection": "¿Qué plan de acompañamiento permitiría traspasar gradualmente la responsabilidad a los vecinos?"
-    }
-  },
-  "construccion": {
-    "emoji": "🛠️",
-    "title": "Proyecto en Construcción",
-    "tone": "info",
-    "tag": "Zona intermedia",
-    "part": {
-      "diagnosis": "La participación comunitaria es el punto más débil. Un proyecto que no se decide con los vecinos pierde apropiación aunque funcione técnicamente.",
-      "reflection": "¿En qué decisiones concretas participaron los vecinos y cuáles se tomaron sin ellos?"
-    },
-    "time": {
-      "diagnosis": "El tiempo en terreno es el punto más débil. Sin acompañamiento prolongado, la confianza y las capacidades locales no alcanzan a consolidarse.",
-      "reflection": "¿Cuánto tiempo necesita la comunidad para apropiarse del proyecto y quién lo definió?"
-    },
-    "tech": {
-      "diagnosis": "La complejidad tecnológica es el punto más débil. Cada componente adicional es algo que la comunidad debe conseguir, pagar y reparar.",
-      "reflection": "¿Qué componente se puede reemplazar por un material local o reciclado sin perder el objetivo?"
-    }
-  },
-  "teoria": {
-    "eyebrow": "Marco teórico",
-    "titulo": "Innovación social y solucionismo tecnológico",
-    "intro": "La verdadera innovación social no se mide por la sofisticación de la tecnología, sino por la capacidad de una comunidad de apropiarse de una solución y sostenerla en el tiempo. Prioriza tecnologías ecoamigables de bajo costo, diseño transdisciplinario y alianzas horizontales con el territorio.",
-    "principios": [
-      {
-        "titulo": "Tecnologías ecoamigables de bajo costo",
-        "texto": "Materiales reciclados o locales, reparables con herramientas que ya existen en el territorio. Reducen la dependencia de proveedores externos y el impacto ambiental. Se relacionan con la tecnología intermedia o apropiada que propuso E. F. Schumacher en Lo pequeño es hermoso (1973)."
-      },
-      {
-        "titulo": "Diseño transdisciplinario",
-        "texto": "Los problemas del territorio no respetan los límites entre disciplinas. Se combinan ingeniería, educación, ciencias sociales y diseño con los saberes de la propia comunidad, que participa como co-creadora y no como destinataria."
-      },
-      {
-        "titulo": "Alianzas horizontales con el territorio",
-        "texto": "La relación con vecinos, escuelas, organizaciones y gobiernos locales se plantea como diálogo entre partes con saberes distintos, no como transferencia de quien sabe hacia quien recibe. Es una idea central en la pedagogía de Paulo Freire (Pedagogía del oprimido, 1970)."
-      }
-    ],
-    "solucionismoTitulo": "Qué es el solucionismo tecnológico",
-    "solucionismo": "Es la tendencia a reducir problemas sociales complejos a problemas de ingeniería con una solución técnica, término popularizado por Evgeny Morozov en Para salvarlo todo, haga clic aquí (2013). Cuando un equipo externo interviene con una solución prediseñada, el proyecto queda sin dueño local y, cuando el equipo se va, nadie lo sostiene. Un elefante blanco es una obra costosa que casi no se usa.",
-    "modeloTitulo": "Cómo lo modela el simulador",
-    "reglas": [
-      { "nombre": "Elefante blanco", "condicion": "Tecnología mayor a 7 y participación menor a 4" },
-      { "nombre": "Abandono temprano", "condicion": "Participación de 7 o más y tiempo en terreno menor a 3" },
-      { "nombre": "Adopción comunitaria exitosa", "condicion": "Tecnología de 1 a 5, participación mayor a 7 y tiempo mayor a 7" }
-    ],
-    "nota": "Los umbrales y las fórmulas son un modelo didáctico para discutir decisiones de diseño. No son mediciones empíricas de proyectos reales."
-  }
-}
-```
-
-Empezá por el paso 1.
-</pre>
+Empezá por el paso 1.</pre>
 
 <footer>Ciclos de Creatividad · Universidad Siglo 21</footer>
 </div>
