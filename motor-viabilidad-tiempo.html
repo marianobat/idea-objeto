@@ -1,0 +1,1623 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viabilidad de un proyecto de acción social en el tiempo</title>
+<link rel="icon" href="img/siglo21.png">
+
+<!-- ============================================================
+     CONFIGURACIÓN: INICIO
+     Lo único que se cambia para adaptar el simulador a otro caso
+     es el texto entre estas dos marcas. Todo lo demás es el motor.
+     ============================================================ -->
+<script id="config" type="application/json">
+{
+  "titulo": "Viabilidad de un proyecto de acción social en el tiempo",
+  "eyebrow": "Acción social · Simulador de decisiones en el tiempo",
+  "bajada": "Definí las tres decisiones del equipo, corré los meses y mirá qué queda en pie cuando el equipo se retira del territorio.",
+  "botonTeoria": "Ver Marco Teórico",
+  "controlesTitulo": "Decisiones del equipo",
+  "controlesNota": "Al moverlas, la corrida vuelve a empezar",
+  "dashboardTitulo": "Estado del territorio",
+  "dashboardNota": "Valores del mes actual",
+  "graficoTitulo": "Evolución, mes a mes",
+  "unidadTiempo": "Mes",
+  "unidadPlural": "meses",
+  "duracion": 48,
+  "mesesPorPunto": 3,
+  "inicial": {
+    "tech": 5,
+    "part": 5,
+    "time": 5
+  },
+  "controles": [
+    {
+      "id": "tech",
+      "label": "Complejidad tecnológica",
+      "corto": "tecnología",
+      "low": "Materiales reciclados y bajo costo",
+      "high": "Alta tecnología, app o IoT",
+      "niveles": [
+        {
+          "hasta": 3,
+          "texto": "Materiales reciclados y de bajo costo, reparables en el barrio"
+        },
+        {
+          "hasta": 6,
+          "texto": "Electrónica simple y componentes de fácil reposición"
+        },
+        {
+          "hasta": 8,
+          "texto": "Dispositivos y software a medida, con soporte técnico"
+        },
+        {
+          "hasta": 10,
+          "texto": "App, sensores e IoT con conectividad permanente"
+        }
+      ]
+    },
+    {
+      "id": "part",
+      "label": "Participación comunitaria",
+      "corto": "participación",
+      "low": "Diseñado en el laboratorio e impuesto",
+      "high": "Co-creado 100% con los vecinos",
+      "niveles": [
+        {
+          "hasta": 3,
+          "texto": "Diseñado en el laboratorio e impuesto a la comunidad"
+        },
+        {
+          "hasta": 6,
+          "texto": "Se consulta a los vecinos, pero decide el equipo"
+        },
+        {
+          "hasta": 8,
+          "texto": "Las decisiones se comparten con los vecinos"
+        },
+        {
+          "hasta": 10,
+          "texto": "Co-creado con los vecinos desde el diagnóstico"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "label": "Tiempo de acompañamiento en terreno",
+      "corto": "acompañamiento",
+      "low": "Visita única",
+      "high": "Acompañamiento largo",
+      "niveles": [
+        {
+          "hasta": 2,
+          "texto": "Intervención rápida: el equipo se va enseguida"
+        },
+        {
+          "hasta": 5,
+          "texto": "Un ciclo corto con algunas visitas"
+        },
+        {
+          "hasta": 7,
+          "texto": "Presencia sostenida durante más de un año"
+        },
+        {
+          "hasta": 10,
+          "texto": "Acompañamiento largo, con traspaso gradual"
+        }
+      ]
+    }
+  ],
+  "medidores": [
+    {
+      "id": "confianza",
+      "label": "Confianza",
+      "sub": "Cuánto creen los vecinos en el proyecto"
+    },
+    {
+      "id": "capacidad",
+      "label": "Capacidad local",
+      "sub": "Lo que la comunidad sabe hacer sola: usar, reparar, organizarse"
+    },
+    {
+      "id": "funcionamiento",
+      "label": "Funcionamiento",
+      "sub": "Cuánto se usa y funciona el proyecto"
+    }
+  ],
+  "lineas": {
+    "retiro": "Se retira el equipo",
+    "exigencia": "Lo que exige la tecnología"
+  },
+  "enCurso": {
+    "emoji": "🏗️",
+    "title": "Proyecto en marcha",
+    "tone": "info",
+    "tagAntes": "Equipo en terreno",
+    "tagDespues": "Equipo retirado",
+    "antes": "El equipo trabaja en el territorio y se retira en el mes {retiro}. Mientras está, el proyecto funciona porque el equipo lo sostiene.",
+    "despues": "El equipo se retiró en el mes {retiro}. Desde ahora, el proyecto funciona solo si la capacidad local alcanza lo que exige la tecnología.",
+    "reflection": "Antes de seguir: ¿qué esperás que pase con el funcionamiento cuando el equipo se vaya?"
+  },
+  "estados": {
+    "elefante": {
+      "emoji": "🛑",
+      "title": "Fracaso por Rechazo Tecnológico",
+      "tone": "bad",
+      "tag": "Colapso del proyecto",
+      "diagnosis": "La solución llegó terminada desde afuera y exige conocimientos y recursos que la comunidad no tiene ni pidió. La confianza nunca despegó, la capacidad local quedó muy por debajo de lo que exige la tecnología y, cuando el equipo se fue, el proyecto se apagó.",
+      "reflection": "¿De qué sirve una app increíble si la comunidad no tiene datos móviles ni fue consultada sobre sus necesidades reales?"
+    },
+    "parche": {
+      "emoji": "🍂",
+      "title": "Abandono Temprano",
+      "tone": "warn",
+      "tag": "Pérdida de continuidad",
+      "diagnosis": "El equipo escuchó a los vecinos y la confianza empezó a crecer, pero se retiró antes de que la capacidad local se formara. Sin quien lo sostenga, el funcionamiento cayó en pocos meses.",
+      "reflection": "Construyeron confianza, pero se fueron antes de traspasar lo necesario. ¿Cuánto tiempo hacía falta para eso?"
+    },
+    "ideal": {
+      "emoji": "🌱🤝",
+      "title": "Adopción Comunitaria Exitosa",
+      "tone": "good",
+      "tag": "Innovación social sostenible",
+      "diagnosis": "La tecnología es simple, las decisiones se tomaron junto a los vecinos y el acompañamiento duró lo suficiente para que la capacidad local superara lo que exige la tecnología. Cuando el equipo se fue, el proyecto siguió funcionando.",
+      "reflection": "¿Quién puede arreglar esta solución dentro de la comunidad cuando algo falle, sin depender del equipo universitario?"
+    },
+    "impuesto": {
+      "emoji": "🧳",
+      "title": "Solución Impuesta",
+      "tone": "bad",
+      "tag": "Funciona solo con el equipo",
+      "diagnosis": "El diseño se decidió sin los vecinos. Mientras el equipo estuvo, el proyecto funcionó a medias; como nadie lo sentía propio, casi no se formó capacidad local y, al retirarse el equipo, dejó de funcionar.",
+      "reflection": "¿Qué necesidad de la comunidad resolvía realmente este proyecto y quién la definió?"
+    },
+    "exigente": {
+      "emoji": "⚙️",
+      "title": "Tecnología Exigente",
+      "tone": "warn",
+      "tag": "Costo de mantenimiento elevado",
+      "diagnosis": "Hubo participación y la capacidad local creció, pero la tecnología exige más de lo que la comunidad puede sostener por su cuenta. Después del retiro, cada falla sin resolver fue bajando el funcionamiento.",
+      "reflection": "¿Existe una versión más simple de esta solución que la comunidad pueda mantener con recursos locales?"
+    },
+    "consolidacion": {
+      "emoji": "🌿",
+      "title": "Promesa en Consolidación",
+      "tone": "info",
+      "tag": "Buen rumbo, falta tiempo",
+      "diagnosis": "La tecnología es apropiada y la co-creación es sólida. El proyecto sigue funcionando después del retiro, pero a medias: la capacidad local quedó cerca de lo que exige la tecnología, sin margen.",
+      "reflection": "¿Qué plan de acompañamiento permitiría traspasar gradualmente la responsabilidad a los vecinos?"
+    }
+  },
+  "construccion": {
+    "emoji": "🛠️",
+    "title": "Proyecto en Construcción",
+    "tone": "info",
+    "tag": "Zona intermedia",
+    "part": {
+      "diagnosis": "La participación comunitaria es el punto más débil. Con poca participación la confianza crece lento y el equipo traspasa poco: cuando se va, la capacidad local no alcanza.",
+      "reflection": "¿En qué decisiones concretas participaron los vecinos y cuáles se tomaron sin ellos?"
+    },
+    "time": {
+      "diagnosis": "El tiempo en terreno es el punto más débil. El equipo se retiró cuando la capacidad local todavía estaba por debajo de lo que exige la tecnología.",
+      "reflection": "¿Cuánto tiempo necesita la comunidad para apropiarse del proyecto y quién lo definió?"
+    },
+    "tech": {
+      "diagnosis": "La complejidad tecnológica es el punto más débil. Cada componente adicional sube lo que la comunidad tiene que saber y conseguir para mantener el proyecto sin ayuda.",
+      "reflection": "¿Qué componente se puede reemplazar por un material local o reciclado sin perder el objetivo?"
+    }
+  },
+  "teoria": {
+    "eyebrow": "Marco teórico",
+    "titulo": "Innovación social y solucionismo tecnológico",
+    "intro": "La verdadera innovación social no se mide por la sofisticación de la tecnología, sino por la capacidad de una comunidad de apropiarse de una solución y sostenerla en el tiempo. Prioriza tecnologías ecoamigables de bajo costo, diseño transdisciplinario y alianzas horizontales con el territorio.",
+    "principios": [
+      {
+        "titulo": "Tecnologías ecoamigables de bajo costo",
+        "texto": "Materiales reciclados o locales, reparables con herramientas que ya existen en el territorio. Reducen la dependencia de proveedores externos y el impacto ambiental. Se relacionan con la tecnología intermedia o apropiada que propuso E. F. Schumacher en Lo pequeño es hermoso (1973)."
+      },
+      {
+        "titulo": "Diseño transdisciplinario",
+        "texto": "Los problemas del territorio no respetan los límites entre disciplinas. Se combinan ingeniería, educación, ciencias sociales y diseño con los saberes de la propia comunidad, que participa como co-creadora y no como destinataria."
+      },
+      {
+        "titulo": "Alianzas horizontales con el territorio",
+        "texto": "La relación con vecinos, escuelas, organizaciones y gobiernos locales se plantea como diálogo entre partes con saberes distintos, no como transferencia de quien sabe hacia quien recibe. Es una idea central en la pedagogía de Paulo Freire (Pedagogía del oprimido, 1970)."
+      }
+    ],
+    "solucionismoTitulo": "Qué es el solucionismo tecnológico",
+    "solucionismo": "Es la tendencia a reducir problemas sociales complejos a problemas de ingeniería con una solución técnica, término popularizado por Evgeny Morozov en Para salvarlo todo, haga clic aquí (2013). Cuando un equipo externo interviene con una solución prediseñada, el proyecto queda sin dueño local y, cuando el equipo se va, nadie lo sostiene. Un elefante blanco es una obra costosa que casi no se usa.",
+    "modeloTitulo": "Cómo lo modela el simulador",
+    "reglas": [
+      {
+        "nombre": "Confianza",
+        "condicion": "Crece mientras el equipo está en terreno, más rápido cuanto mayor es la participación. La tecnología compleja impuesta sin participación la desgasta. Después del retiro, se mantiene si el proyecto funciona."
+      },
+      {
+        "nombre": "Capacidad local",
+        "condicion": "Se forma solo mientras el equipo está, y hace falta confianza y participación para que el traspaso ocurra. La tecnología compleja la hace más lenta. Sin práctica, se pierde de a poco."
+      },
+      {
+        "nombre": "Funcionamiento",
+        "condicion": "Mientras el equipo está, lo sostiene el equipo. Después del retiro, depende de que la capacidad local alcance lo que exige la tecnología."
+      },
+      {
+        "nombre": "Lo que exige la tecnología",
+        "condicion": "Es un nivel fijo de capacidad local: cuanto más compleja la tecnología, más alto."
+      }
+    ],
+    "nota": "Las tasas y los umbrales son un modelo didáctico para discutir decisiones de diseño. No son mediciones empíricas de proyectos reales."
+  }
+}
+</script>
+<!-- ============================================================
+     CONFIGURACIÓN: FIN
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root {
+  --bg: #EDF0E9;
+  --surface: #F8FAF5;
+  --ink: #18241D;
+  --muted: #566459;
+  --line: #D0D8CB;
+  --track: #DDE3D8;
+  --accent: #0B6B73;
+  --accent-ink: #FFFFFF;
+  --good: #2B7A4B;
+  --warn: #9A6200;
+  --bad: #BF3F2A;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1612; --surface: #161F19; --ink: #E7EEE7; --muted: #9BA99F; --line: #28352D; --track: #223027;
+    --accent: #56B9C0; --accent-ink: #06191B; --good: #5CC48A; --warn: #E3B04B; --bad: #F0806A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1612; --surface: #161F19; --ink: #E7EEE7; --muted: #9BA99F; --line: #28352D; --track: #223027;
+  --accent: #56B9C0; --accent-ink: #06191B; --good: #5CC48A; --warn: #E3B04B; --bad: #F0806A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+button, input { font: inherit; color: inherit; }
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left));
+}
+@media (min-width: 640px) {
+  .wrap { padding: 40px 24px 56px; }
+}
+.top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .top { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+}
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  margin: 6px 0 0;
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+@media (min-width: 640px) { h1 { font-size: 40px; } }
+.bajada {
+  margin: 12px 0 0;
+  max-width: 60ch;
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.home {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: .9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.home:hover { color: var(--ink); }
+.home:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+.btn-ghost {
+  flex: none;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.btn-ghost:hover { background: var(--bg); }
+.btn:focus-visible, .btn-ghost:focus-visible, .range:focus-visible, .cfg button:focus-visible, .cfg textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 3px;
+}
+.stage {
+  margin-top: 28px;
+  display: grid;
+  align-items: start;
+  gap: 20px;
+}
+@media (min-width: 1024px) {
+  .stage { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; }
+  .controls { position: sticky; top: 16px; }
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  min-width: 0;
+}
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head h2 { margin: 0; }
+.note { color: var(--muted); font-size: 13px; }
+.divide > * { padding: 20px; }
+.divide > * + * { border-top: 1px solid var(--line); }
+@media (max-width: 420px) {
+  .divide > * { padding: 18px 16px; }
+  .panel-head { padding: 12px 16px; }
+}
+.ctl-top, .meter-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ctl-label, .meter-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.ctl-label { font-size: 17px; }
+.meter-name { margin: 0; font-size: 16px; }
+.ctl-value, .meter-num {
+  font-family: var(--font-mono);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+.ctl-value { font-size: 26px; }
+.ctl-value .unit, .meter-num .unit { color: var(--muted); font-size: 14px; }
+.tier {
+  margin: 4px 0 0;
+  min-height: 2.6em;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 22px;
+  margin: 4px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) calc(11px + (100% - 22px) * var(--f)), var(--track) calc(11px + (100% - 22px) * var(--f)));
+}
+.range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) calc(11px + (100% - 22px) * var(--f)), var(--track) calc(11px + (100% - 22px) * var(--f)));
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 5px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+}
+.range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 5px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+}
+.ticks { position: relative; height: 16px; margin-top: 4px; }
+.ticks span {
+  position: absolute;
+  top: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  transform: translateX(-50%);
+}
+.ticks span.on { color: var(--ink); font-weight: 500; }
+.ends {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.ends .right { text-align: right; }
+.ends b { font-family: var(--font-mono); font-weight: 500; }
+.readout { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+@media (min-width: 1024px) { .readout { gap: 24px; } }
+.meter-sub { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; }
+.meter-score { display: flex; flex: none; align-items: baseline; gap: 8px; }
+.meter-num { font-size: 28px; }
+.band-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tone);
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.segs { display: flex; height: 22px; gap: 3px; margin-top: 12px; }
+.seg { flex: 1; border-radius: 3px; background: var(--track); transition: background-color .35s ease; }
+.seg[data-lit="true"] { background: var(--tone); }
+.scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.tone-good { --tone: var(--good); }
+.tone-warn { --tone: var(--warn); }
+.tone-bad { --tone: var(--bad); }
+.tone-info { --tone: var(--accent); }
+.status {
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, var(--line));
+  background: color-mix(in srgb, var(--tone) 9%, var(--surface));
+}
+@media (min-width: 640px) { .status { padding: 24px; } }
+.status-row { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+@media (min-width: 640px) { .status-row { flex-direction: row; align-items: center; gap: 24px; } }
+.emoji { font-size: 92px; line-height: 1; user-select: none; }
+@media (min-width: 640px) { .emoji { font-size: 112px; } }
+.status h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+@media (min-width: 640px) { .status h2 { font-size: 30px; } }
+.tag {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: var(--tone);
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.diagnosis { margin: 16px 0 0; max-width: 62ch; font-size: 15px; line-height: 1.6; }
+.reflect { margin-top: 16px; padding-top: 16px; border-top: 1px dashed color-mix(in srgb, var(--tone) 50%, var(--line)); }
+.reflect .q {
+  margin: 6px 0 0;
+  max-width: 60ch;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.emoji-pop { animation: pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+.shake { animation: shake .5s ease both; }
+@keyframes pop { from { transform: scale(.55) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes shake { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+.modal-back {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  animation: fade .2s ease both;
+}
+.modal-panel {
+  width: 100%;
+  max-width: 860px;
+  margin: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  animation: rise .25s ease both;
+}
+@media (min-width: 640px) { .modal-panel { padding: 30px; } }
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.modal-panel h2 {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+@media (min-width: 640px) { .modal-panel h2 { font-size: 30px; } }
+.intro { margin: 16px 0 0; max-width: 62ch; font-size: 15.5px; line-height: 1.6; }
+.principles { display: grid; gap: 16px; margin-top: 20px; }
+@media (min-width: 640px) { .principles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.principle { border-top: 2px solid var(--accent); padding-top: 12px; }
+.principle h3, .callout h3, .modal-panel > h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.principle p { margin: 8px 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.callout {
+  margin-top: 20px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.callout p { margin: 6px 0 0; max-width: 66ch; font-size: 14.5px; line-height: 1.6; }
+.modal-panel > h3 { margin-top: 24px; }
+.rule {
+  display: grid;
+  gap: 2px 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 640px) { .rule { grid-template-columns: 15rem 1fr; } }
+.rule dt { font-size: 14px; font-weight: 600; }
+.rule dd { margin: 0; color: var(--muted); font-size: 14px; }
+.nota { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.cfg-toggle {
+  justify-self: start;
+  margin-top: 28px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.cfg {
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+.cfg h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+.cfg p { margin: 0; color: var(--muted); max-width: 65ch; }
+.cfg textarea {
+  width: 100%;
+  min-height: 320px;
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  resize: vertical;
+}
+.cfg .row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cfg .row button {
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.cfg .row button.main { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.msg { font-size: .95rem; min-height: 1.4em; }
+.msg.err { color: var(--bad); }
+.msg.ok { color: var(--muted); }
+.banner {
+  max-width: 1120px;
+  margin: 0 auto 16px;
+  padding: 0 16px;
+  color: var(--bad);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .emoji-pop, .shake, .modal-back, .modal-panel { animation: none; }
+  .seg, .btn { transition: none; }
+}
+/* ---- Agregados para la corrida en el tiempo ---- */
+:root { --s-conf: #A24F86; --s-cap: #3F68B0; --s-func: var(--accent); --ghost: #9AA49F; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --s-conf: #E08BC4; --s-cap: #8EAAEA; --ghost: #5F6B66; }
+}
+:root[data-theme="dark"] { --s-conf: #E08BC4; --s-cap: #8EAAEA; --ghost: #5F6B66; }
+.ctl-value .months { font-size: 26px; }
+.run-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.run-step { font-family: var(--font-mono); font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.run-step .unit { color: var(--muted); font-size: 14px; }
+.progress { position: relative; height: 8px; margin-top: 14px; border-radius: 999px; background: var(--track); overflow: visible; }
+.progress-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); width: 0; }
+.progress-mark { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.progress-legend { margin-top: 8px; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.actions .btn { align-self: auto; min-width: 7.5rem; }
+.btn[disabled], .btn-ghost[disabled] { opacity: .55; cursor: default; filter: none; }
+.btn-ghost[disabled]:hover { background: transparent; }
+.chart-wrap { padding: 16px 20px 18px; }
+@media (max-width: 420px) { .chart-wrap { padding: 14px 16px 16px; } }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: 12.5px; margin-bottom: 10px; }
+.keys span { display: inline-flex; align-items: center; gap: 6px; }
+.keys i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+.keys i.dash { height: 0; border-top: 2px dashed var(--ghost); background: none; }
+.k-func { background: var(--s-func); } .k-conf { background: var(--s-conf); } .k-cap { background: var(--s-cap); }
+canvas.chart { display: block; width: 100%; height: 240px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: 1px; }
+.segs-wrap { position: relative; }
+.segs.series .seg[data-lit="true"] { background: var(--series); }
+.need { position: absolute; top: 6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.need-text { margin: 6px 0 0; color: var(--muted); font-size: 12.5px; }
+.status .when { margin-left: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="home" href="index.html">← Volver al inicio</a>
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 id="titulo"></h1>
+      <p class="bajada" id="bajada"></p>
+    </div>
+    <button type="button" class="btn" id="openTheory"></button>
+  </header>
+
+  <main class="stage">
+    <section class="panel controls" aria-labelledby="controlsTitle">
+      <div class="panel-head">
+        <h2 class="eyebrow" id="controlsTitle"></h2>
+        <span class="note" id="controlsNote"></span>
+      </div>
+      <div class="divide">
+        <div id="controlList" class="divide" style="padding:0"></div>
+        <div class="run">
+          <div class="run-top">
+            <p class="eyebrow">Corrida</p>
+            <span class="run-step" aria-live="off"><span id="stepUnit"></span> <span id="stepNow">0</span><span class="unit"> de <span id="stepMax">48</span></span></span>
+          </div>
+          <div class="progress" aria-hidden="true">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-mark" id="progressMark"></div>
+          </div>
+          <p class="progress-legend" id="progressLegend"></p>
+          <div class="actions">
+            <button type="button" class="btn" id="play">Empezar</button>
+            <button type="button" class="btn-ghost" id="skip">Ir al final</button>
+            <button type="button" class="btn-ghost" id="reset">Reiniciar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="readout">
+      <div id="status" aria-live="polite"></div>
+      <section class="panel" aria-labelledby="chartTitle">
+        <div class="panel-head">
+          <h2 class="eyebrow" id="chartTitle"></h2>
+          <span class="note" id="prevNote" hidden></span>
+        </div>
+        <div class="chart-wrap">
+          <div class="keys" id="keys"></div>
+          <canvas class="chart" id="chart" role="img" aria-label="Gráfico de confianza, capacidad local y funcionamiento en el tiempo"></canvas>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="dashTitle">
+        <div class="panel-head">
+          <h2 class="eyebrow" id="dashTitle"></h2>
+          <span class="note" id="dashNote"></span>
+        </div>
+        <div class="divide" id="meters"></div>
+      </section>
+    </div>
+  </main>
+
+  <button type="button" class="cfg-toggle" id="cfgToggle">Configuración</button>
+  <section class="cfg" id="cfg" hidden aria-label="Configuración del simulador">
+    <h2>Configuración</h2>
+    <p>Pegá acá la configuración que te dio la IA y tocá Aplicar. Para conservar tu simulador, tocá Descargar: se guarda un archivo nuevo que podés abrir sin conexión.</p>
+    <textarea id="cfgText" spellcheck="false" aria-label="Texto de configuración"></textarea>
+    <div class="row">
+      <button type="button" class="main" id="cfgApply">Aplicar</button>
+      <button type="button" id="cfgSave">Descargar este simulador</button>
+      <button type="button" id="cfgOrig">Volver a la original</button>
+    </div>
+    <div class="msg" id="cfgMsg" role="status"></div>
+  </section>
+</div>
+<div id="modal" class="modal-back" hidden></div>
+
+<script id="defaultConfig" type="application/json">
+{
+  "titulo": "Viabilidad de un proyecto de acción social en el tiempo",
+  "eyebrow": "Acción social · Simulador de decisiones en el tiempo",
+  "bajada": "Definí las tres decisiones del equipo, corré los meses y mirá qué queda en pie cuando el equipo se retira del territorio.",
+  "botonTeoria": "Ver Marco Teórico",
+  "controlesTitulo": "Decisiones del equipo",
+  "controlesNota": "Al moverlas, la corrida vuelve a empezar",
+  "dashboardTitulo": "Estado del territorio",
+  "dashboardNota": "Valores del mes actual",
+  "graficoTitulo": "Evolución, mes a mes",
+  "unidadTiempo": "Mes",
+  "unidadPlural": "meses",
+  "duracion": 48,
+  "mesesPorPunto": 3,
+  "inicial": {
+    "tech": 5,
+    "part": 5,
+    "time": 5
+  },
+  "controles": [
+    {
+      "id": "tech",
+      "label": "Complejidad tecnológica",
+      "corto": "tecnología",
+      "low": "Materiales reciclados y bajo costo",
+      "high": "Alta tecnología, app o IoT",
+      "niveles": [
+        {
+          "hasta": 3,
+          "texto": "Materiales reciclados y de bajo costo, reparables en el barrio"
+        },
+        {
+          "hasta": 6,
+          "texto": "Electrónica simple y componentes de fácil reposición"
+        },
+        {
+          "hasta": 8,
+          "texto": "Dispositivos y software a medida, con soporte técnico"
+        },
+        {
+          "hasta": 10,
+          "texto": "App, sensores e IoT con conectividad permanente"
+        }
+      ]
+    },
+    {
+      "id": "part",
+      "label": "Participación comunitaria",
+      "corto": "participación",
+      "low": "Diseñado en el laboratorio e impuesto",
+      "high": "Co-creado 100% con los vecinos",
+      "niveles": [
+        {
+          "hasta": 3,
+          "texto": "Diseñado en el laboratorio e impuesto a la comunidad"
+        },
+        {
+          "hasta": 6,
+          "texto": "Se consulta a los vecinos, pero decide el equipo"
+        },
+        {
+          "hasta": 8,
+          "texto": "Las decisiones se comparten con los vecinos"
+        },
+        {
+          "hasta": 10,
+          "texto": "Co-creado con los vecinos desde el diagnóstico"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "label": "Tiempo de acompañamiento en terreno",
+      "corto": "acompañamiento",
+      "low": "Visita única",
+      "high": "Acompañamiento largo",
+      "niveles": [
+        {
+          "hasta": 2,
+          "texto": "Intervención rápida: el equipo se va enseguida"
+        },
+        {
+          "hasta": 5,
+          "texto": "Un ciclo corto con algunas visitas"
+        },
+        {
+          "hasta": 7,
+          "texto": "Presencia sostenida durante más de un año"
+        },
+        {
+          "hasta": 10,
+          "texto": "Acompañamiento largo, con traspaso gradual"
+        }
+      ]
+    }
+  ],
+  "medidores": [
+    {
+      "id": "confianza",
+      "label": "Confianza",
+      "sub": "Cuánto creen los vecinos en el proyecto"
+    },
+    {
+      "id": "capacidad",
+      "label": "Capacidad local",
+      "sub": "Lo que la comunidad sabe hacer sola: usar, reparar, organizarse"
+    },
+    {
+      "id": "funcionamiento",
+      "label": "Funcionamiento",
+      "sub": "Cuánto se usa y funciona el proyecto"
+    }
+  ],
+  "lineas": {
+    "retiro": "Se retira el equipo",
+    "exigencia": "Lo que exige la tecnología"
+  },
+  "enCurso": {
+    "emoji": "🏗️",
+    "title": "Proyecto en marcha",
+    "tone": "info",
+    "tagAntes": "Equipo en terreno",
+    "tagDespues": "Equipo retirado",
+    "antes": "El equipo trabaja en el territorio y se retira en el mes {retiro}. Mientras está, el proyecto funciona porque el equipo lo sostiene.",
+    "despues": "El equipo se retiró en el mes {retiro}. Desde ahora, el proyecto funciona solo si la capacidad local alcanza lo que exige la tecnología.",
+    "reflection": "Antes de seguir: ¿qué esperás que pase con el funcionamiento cuando el equipo se vaya?"
+  },
+  "estados": {
+    "elefante": {
+      "emoji": "🛑",
+      "title": "Fracaso por Rechazo Tecnológico",
+      "tone": "bad",
+      "tag": "Colapso del proyecto",
+      "diagnosis": "La solución llegó terminada desde afuera y exige conocimientos y recursos que la comunidad no tiene ni pidió. La confianza nunca despegó, la capacidad local quedó muy por debajo de lo que exige la tecnología y, cuando el equipo se fue, el proyecto se apagó.",
+      "reflection": "¿De qué sirve una app increíble si la comunidad no tiene datos móviles ni fue consultada sobre sus necesidades reales?"
+    },
+    "parche": {
+      "emoji": "🍂",
+      "title": "Abandono Temprano",
+      "tone": "warn",
+      "tag": "Pérdida de continuidad",
+      "diagnosis": "El equipo escuchó a los vecinos y la confianza empezó a crecer, pero se retiró antes de que la capacidad local se formara. Sin quien lo sostenga, el funcionamiento cayó en pocos meses.",
+      "reflection": "Construyeron confianza, pero se fueron antes de traspasar lo necesario. ¿Cuánto tiempo hacía falta para eso?"
+    },
+    "ideal": {
+      "emoji": "🌱🤝",
+      "title": "Adopción Comunitaria Exitosa",
+      "tone": "good",
+      "tag": "Innovación social sostenible",
+      "diagnosis": "La tecnología es simple, las decisiones se tomaron junto a los vecinos y el acompañamiento duró lo suficiente para que la capacidad local superara lo que exige la tecnología. Cuando el equipo se fue, el proyecto siguió funcionando.",
+      "reflection": "¿Quién puede arreglar esta solución dentro de la comunidad cuando algo falle, sin depender del equipo universitario?"
+    },
+    "impuesto": {
+      "emoji": "🧳",
+      "title": "Solución Impuesta",
+      "tone": "bad",
+      "tag": "Funciona solo con el equipo",
+      "diagnosis": "El diseño se decidió sin los vecinos. Mientras el equipo estuvo, el proyecto funcionó a medias; como nadie lo sentía propio, casi no se formó capacidad local y, al retirarse el equipo, dejó de funcionar.",
+      "reflection": "¿Qué necesidad de la comunidad resolvía realmente este proyecto y quién la definió?"
+    },
+    "exigente": {
+      "emoji": "⚙️",
+      "title": "Tecnología Exigente",
+      "tone": "warn",
+      "tag": "Costo de mantenimiento elevado",
+      "diagnosis": "Hubo participación y la capacidad local creció, pero la tecnología exige más de lo que la comunidad puede sostener por su cuenta. Después del retiro, cada falla sin resolver fue bajando el funcionamiento.",
+      "reflection": "¿Existe una versión más simple de esta solución que la comunidad pueda mantener con recursos locales?"
+    },
+    "consolidacion": {
+      "emoji": "🌿",
+      "title": "Promesa en Consolidación",
+      "tone": "info",
+      "tag": "Buen rumbo, falta tiempo",
+      "diagnosis": "La tecnología es apropiada y la co-creación es sólida. El proyecto sigue funcionando después del retiro, pero a medias: la capacidad local quedó cerca de lo que exige la tecnología, sin margen.",
+      "reflection": "¿Qué plan de acompañamiento permitiría traspasar gradualmente la responsabilidad a los vecinos?"
+    }
+  },
+  "construccion": {
+    "emoji": "🛠️",
+    "title": "Proyecto en Construcción",
+    "tone": "info",
+    "tag": "Zona intermedia",
+    "part": {
+      "diagnosis": "La participación comunitaria es el punto más débil. Con poca participación la confianza crece lento y el equipo traspasa poco: cuando se va, la capacidad local no alcanza.",
+      "reflection": "¿En qué decisiones concretas participaron los vecinos y cuáles se tomaron sin ellos?"
+    },
+    "time": {
+      "diagnosis": "El tiempo en terreno es el punto más débil. El equipo se retiró cuando la capacidad local todavía estaba por debajo de lo que exige la tecnología.",
+      "reflection": "¿Cuánto tiempo necesita la comunidad para apropiarse del proyecto y quién lo definió?"
+    },
+    "tech": {
+      "diagnosis": "La complejidad tecnológica es el punto más débil. Cada componente adicional sube lo que la comunidad tiene que saber y conseguir para mantener el proyecto sin ayuda.",
+      "reflection": "¿Qué componente se puede reemplazar por un material local o reciclado sin perder el objetivo?"
+    }
+  },
+  "teoria": {
+    "eyebrow": "Marco teórico",
+    "titulo": "Innovación social y solucionismo tecnológico",
+    "intro": "La verdadera innovación social no se mide por la sofisticación de la tecnología, sino por la capacidad de una comunidad de apropiarse de una solución y sostenerla en el tiempo. Prioriza tecnologías ecoamigables de bajo costo, diseño transdisciplinario y alianzas horizontales con el territorio.",
+    "principios": [
+      {
+        "titulo": "Tecnologías ecoamigables de bajo costo",
+        "texto": "Materiales reciclados o locales, reparables con herramientas que ya existen en el territorio. Reducen la dependencia de proveedores externos y el impacto ambiental. Se relacionan con la tecnología intermedia o apropiada que propuso E. F. Schumacher en Lo pequeño es hermoso (1973)."
+      },
+      {
+        "titulo": "Diseño transdisciplinario",
+        "texto": "Los problemas del territorio no respetan los límites entre disciplinas. Se combinan ingeniería, educación, ciencias sociales y diseño con los saberes de la propia comunidad, que participa como co-creadora y no como destinataria."
+      },
+      {
+        "titulo": "Alianzas horizontales con el territorio",
+        "texto": "La relación con vecinos, escuelas, organizaciones y gobiernos locales se plantea como diálogo entre partes con saberes distintos, no como transferencia de quien sabe hacia quien recibe. Es una idea central en la pedagogía de Paulo Freire (Pedagogía del oprimido, 1970)."
+      }
+    ],
+    "solucionismoTitulo": "Qué es el solucionismo tecnológico",
+    "solucionismo": "Es la tendencia a reducir problemas sociales complejos a problemas de ingeniería con una solución técnica, término popularizado por Evgeny Morozov en Para salvarlo todo, haga clic aquí (2013). Cuando un equipo externo interviene con una solución prediseñada, el proyecto queda sin dueño local y, cuando el equipo se va, nadie lo sostiene. Un elefante blanco es una obra costosa que casi no se usa.",
+    "modeloTitulo": "Cómo lo modela el simulador",
+    "reglas": [
+      {
+        "nombre": "Confianza",
+        "condicion": "Crece mientras el equipo está en terreno, más rápido cuanto mayor es la participación. La tecnología compleja impuesta sin participación la desgasta. Después del retiro, se mantiene si el proyecto funciona."
+      },
+      {
+        "nombre": "Capacidad local",
+        "condicion": "Se forma solo mientras el equipo está, y hace falta confianza y participación para que el traspaso ocurra. La tecnología compleja la hace más lenta. Sin práctica, se pierde de a poco."
+      },
+      {
+        "nombre": "Funcionamiento",
+        "condicion": "Mientras el equipo está, lo sostiene el equipo. Después del retiro, depende de que la capacidad local alcance lo que exige la tecnología."
+      },
+      {
+        "nombre": "Lo que exige la tecnología",
+        "condicion": "Es un nivel fijo de capacidad local: cuanto más compleja la tecnología, más alto."
+      }
+    ],
+    "nota": "Las tasas y los umbrales son un modelo didáctico para discutir decisiones de diseño. No son mediciones empíricas de proyectos reales."
+  }
+}
+</script>
+
+<script>
+(function () {
+  // ===== Motor. No hace falta modificar nada de acá para abajo. =====
+  const PRISTINE = '<!doctype html>\n' + document.documentElement.outerHTML;
+  const ORIGINAL_TEXT = document.getElementById('config').textContent.trim();
+  const DEFAULT_TEXT = document.getElementById('defaultConfig').textContent.trim();
+  const CONTROL_IDS = ['tech', 'part', 'time'];
+  const METER_IDS = ['confianza', 'capacidad', 'funcionamiento'];
+  const SERIES = { confianza: 'C', capacidad: 'K', funcionamiento: 'F' };
+  const SERIES_VAR = { confianza: '--s-conf', capacidad: '--s-cap', funcionamiento: '--s-func' };
+  const STATE_IDS = ['elefante', 'parche', 'ideal', 'impuesto', 'exigente', 'consolidacion'];
+  const TONES = ['bad', 'warn', 'good', 'info'];
+  const WEAK = ['part', 'time', 'tech'];
+  const TICK = 160;
+  const $ = function (id) { return document.getElementById(id); };
+
+  function clamp(v, a, b) {
+    if (a === undefined) a = 0;
+    if (b === undefined) b = 100;
+    return Math.min(b, Math.max(a, v));
+  }
+  function isText(v, max) {
+    return typeof v === 'string' && v.trim().length > 0 && v.length <= max;
+  }
+  function h(tag, props, kids) {
+    const node = document.createElement(tag);
+    if (props) {
+      Object.keys(props).forEach(function (key) {
+        const value = props[key];
+        if (value == null || value === false) return;
+        if (key === 'class') node.className = value;
+        else if (key === 'text') node.textContent = value;
+        else node.setAttribute(key, value === true ? '' : String(value));
+      });
+    }
+    (kids || []).forEach(function (kid) {
+      if (kid == null || kid === false) return;
+      node.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid);
+    });
+    return node;
+  }
+
+  // ---- Validación ----
+  function checkCopy(obj, path, e) {
+    if (!obj || typeof obj !== 'object') { e.push('Falta "' + path + '".'); return; }
+    if (!isText(obj.diagnosis, 450)) e.push('Falta "' + path + '.diagnosis" (hasta 450 caracteres).');
+    if (!isText(obj.reflection, 280)) e.push('Falta "' + path + '.reflection" (hasta 280 caracteres).');
+  }
+  function checkFace(obj, path, e) {
+    if (!obj || typeof obj !== 'object') { e.push('Falta "' + path + '".'); return; }
+    if (!isText(obj.emoji, 16)) e.push('Falta "' + path + '.emoji".');
+    if (!isText(obj.title, 80)) e.push('Falta "' + path + '.title" (hasta 80 caracteres).');
+    if (TONES.indexOf(obj.tone) < 0) e.push('"' + path + '.tone" tiene que ser "bad", "warn", "good" o "info".');
+  }
+  function checkNiveles(list, path, e) {
+    if (!Array.isArray(list) || list.length < 2 || list.length > 6) {
+      e.push('"' + path + '" tiene que ser una lista de 2 a 6 niveles.');
+      return;
+    }
+    let prev = 0;
+    list.forEach(function (nivel, i) {
+      const here = path + '[' + i + ']';
+      if (!nivel || !Number.isInteger(nivel.hasta) || nivel.hasta < 1 || nivel.hasta > 10 || nivel.hasta <= prev) {
+        e.push('"' + here + '.hasta" tiene que ser un entero de 1 a 10, mayor que el anterior.');
+      } else prev = nivel.hasta;
+      if (!nivel || !isText(nivel.texto, 160)) e.push('Falta "' + here + '.texto" (hasta 160 caracteres).');
+    });
+    if (list[list.length - 1] && list[list.length - 1].hasta !== 10) e.push('El último nivel de "' + path + '" tiene que llegar a 10.');
+  }
+  function validate(c) {
+    const e = [];
+    if (!c || typeof c !== 'object') return ['La configuración no tiene el formato esperado.'];
+    [['titulo', 100], ['eyebrow', 90], ['bajada', 240], ['botonTeoria', 40], ['controlesTitulo', 80], ['controlesNota', 60],
+     ['dashboardTitulo', 80], ['dashboardNota', 60], ['graficoTitulo', 60], ['unidadTiempo', 20], ['unidadPlural', 20]].forEach(function (f) {
+      if (!isText(c[f[0]], f[1])) e.push('Falta "' + f[0] + '" (hasta ' + f[1] + ' caracteres).');
+    });
+    const mpp = c.mesesPorPunto;
+    if (!(Number.isInteger(mpp) && mpp >= 1 && mpp <= 6)) e.push('"mesesPorPunto" es un entero de 1 a 6: cuántas unidades de tiempo vale cada punto de la palanca de tiempo.');
+    if (!(Number.isInteger(c.duracion) && c.duracion >= 24 && c.duracion <= 120)) e.push('"duracion" es un entero de 24 a 120.');
+    else if (Number.isInteger(mpp) && c.duracion < 10 * mpp + 12) e.push('"duracion" tiene que ser al menos ' + (10 * mpp + 12) + ', para que se vea qué pasa después del retiro más tardío.');
+    CONTROL_IDS.forEach(function (id) {
+      const v = c.inicial && c.inicial[id];
+      if (!(Number.isInteger(v) && v >= 1 && v <= 10)) e.push('"inicial.' + id + '" es un entero de 1 a 10.');
+    });
+    if (!Array.isArray(c.controles) || c.controles.length !== 3) e.push('"controles" tiene que tener las tres palancas, en este orden: tech, part, time.');
+    else c.controles.forEach(function (ctl, i) {
+      const path = 'controles[' + i + ']';
+      if (!ctl || ctl.id !== CONTROL_IDS[i]) e.push('"' + path + '.id" tiene que ser "' + CONTROL_IDS[i] + '".');
+      if (!ctl || !isText(ctl.label, 50)) e.push('Falta "' + path + '.label" (hasta 50 caracteres).');
+      if (!ctl || !isText(ctl.corto, 24)) e.push('Falta "' + path + '.corto" (hasta 24 caracteres).');
+      if (!ctl || !isText(ctl.low, 80)) e.push('Falta "' + path + '.low" (hasta 80 caracteres).');
+      if (!ctl || !isText(ctl.high, 80)) e.push('Falta "' + path + '.high" (hasta 80 caracteres).');
+      checkNiveles(ctl && ctl.niveles, path + '.niveles', e);
+    });
+    if (!Array.isArray(c.medidores) || c.medidores.length !== 3) e.push('"medidores" tiene que tener tres indicadores, en este orden: confianza, capacidad, funcionamiento.');
+    else c.medidores.forEach(function (m, i) {
+      const path = 'medidores[' + i + ']';
+      if (!m || m.id !== METER_IDS[i]) e.push('"' + path + '.id" tiene que ser "' + METER_IDS[i] + '".');
+      if (!m || !isText(m.label, 40)) e.push('Falta "' + path + '.label" (hasta 40 caracteres).');
+      if (!m || !isText(m.sub, 90)) e.push('Falta "' + path + '.sub" (hasta 90 caracteres).');
+    });
+    const l = c.lineas || {};
+    if (!isText(l.retiro, 40)) e.push('Falta "lineas.retiro" (hasta 40 caracteres).');
+    if (!isText(l.exigencia, 40)) e.push('Falta "lineas.exigencia" (hasta 40 caracteres).');
+    const k = c.enCurso;
+    checkFace(k, 'enCurso', e);
+    if (k) {
+      if (!isText(k.tagAntes, 50)) e.push('Falta "enCurso.tagAntes" (hasta 50 caracteres).');
+      if (!isText(k.tagDespues, 50)) e.push('Falta "enCurso.tagDespues" (hasta 50 caracteres).');
+      if (!isText(k.antes, 300)) e.push('Falta "enCurso.antes" (hasta 300 caracteres).');
+      if (!isText(k.despues, 300)) e.push('Falta "enCurso.despues" (hasta 300 caracteres).');
+      if (!isText(k.reflection, 280)) e.push('Falta "enCurso.reflection" (hasta 280 caracteres).');
+    }
+    STATE_IDS.forEach(function (id) {
+      const s = c.estados && c.estados[id];
+      checkFace(s, 'estados.' + id, e);
+      if (s && !isText(s.tag, 50)) e.push('Falta "estados.' + id + '.tag" (hasta 50 caracteres).');
+      checkCopy(s, 'estados.' + id, e);
+    });
+    checkFace(c.construccion, 'construccion', e);
+    if (c.construccion && !isText(c.construccion.tag, 50)) e.push('Falta "construccion.tag" (hasta 50 caracteres).');
+    WEAK.forEach(function (id) { checkCopy(c.construccion && c.construccion[id], 'construccion.' + id, e); });
+    const t = c.teoria;
+    if (!t || typeof t !== 'object') e.push('Falta "teoria".');
+    else {
+      [['eyebrow', 90], ['titulo', 100], ['intro', 550], ['solucionismoTitulo', 80], ['solucionismo', 750], ['modeloTitulo', 80], ['nota', 350]].forEach(function (f) {
+        if (!isText(t[f[0]], f[1])) e.push('Falta "teoria.' + f[0] + '" (hasta ' + f[1] + ' caracteres).');
+      });
+      if (!Array.isArray(t.principios) || t.principios.length < 1 || t.principios.length > 6) e.push('"teoria.principios" tiene que tener de 1 a 6 principios.');
+      else t.principios.forEach(function (p, i) {
+        if (!p || !isText(p.titulo, 80)) e.push('Falta "teoria.principios[' + i + '].titulo" (hasta 80 caracteres).');
+        if (!p || !isText(p.texto, 550)) e.push('Falta "teoria.principios[' + i + '].texto" (hasta 550 caracteres).');
+      });
+      if (!Array.isArray(t.reglas) || t.reglas.length < 1 || t.reglas.length > 8) e.push('"teoria.reglas" tiene que tener de 1 a 8 reglas.');
+      else t.reglas.forEach(function (r, i) {
+        if (!r || !isText(r.nombre, 60)) e.push('Falta "teoria.reglas[' + i + '].nombre" (hasta 60 caracteres).');
+        if (!r || !isText(r.condicion, 280)) e.push('Falta "teoria.reglas[' + i + '].condicion" (hasta 280 caracteres).');
+      });
+    }
+    return e;
+  }
+
+  // ---- Modelo: tres stocks que se actualizan cada unidad de tiempo ----
+  // C confianza, K capacidad local, F funcionamiento; todos de 0 a 100.
+  function simulate(inputs, dur, mpp) {
+    const t = (inputs.tech - 1) / 9, p = (inputs.part - 1) / 9, R = inputs.time * mpp;
+    const exigencia = 20 + 65 * t;
+    let cf = 10, cap = 5, fn = 0;
+    const s = { C: [cf], K: [cap], F: [fn], R: R, exigencia: exigencia };
+    for (let m = 1; m <= dur; m++) {
+      const presente = m <= R;
+      let inC, outC, inK;
+      if (presente) {
+        inC = 10 * (0.08 + 0.92 * p) * (1 - cf / 100);            // el equipo construye confianza, según la participación
+        outC = 0.02 * cf + 6 * t * (1 - p) * (cf / 100);            // la tecnología impuesta genera rechazo
+        inK = 8 * (cf / 100) * (0.1 + 0.9 * p) * (1 - 0.5 * t) * (1 - cap / 100); // traspaso de saberes
+      } else {
+        inC = 5 * (fn / 100) * (1 - cf / 100);                       // si funciona, la confianza se sostiene
+        outC = 0.03 * cf;
+        inK = 2 * (fn / 100) * (cap / 100) * (1 - cap / 100);           // se aprende usándolo
+      }
+      const outK = 0.015 * cap;                                      // sin práctica, se olvida
+      const operativo = presente ? 1 : Math.pow(Math.min(1, cap / exigencia), 2);
+      const meta = 100 * operativo * (0.25 + 0.75 * cf / 100);
+      fn += 0.25 * (meta - fn);
+      cf = clamp(cf + inC - outC);
+      cap = clamp(cap + inK - outK);
+      s.C.push(cf); s.K.push(cap); s.F.push(fn);
+    }
+    return s;
+  }
+  function stateOf(key) { return Object.assign({ key: key }, C.estados[key]); }
+  function classify(inputs, s) {
+    const T = inputs.tech, P = inputs.part, D = inputs.time;
+    const fin = s.F[s.F.length - 1];
+    if (fin >= 65) return stateOf('ideal');
+    if (T > 7 && P < 4) return stateOf('elefante');
+    if (P < 4) return stateOf('impuesto');
+    if (P >= 7 && D < 3) return stateOf('parche');
+    if (T >= 6) return stateOf('exigente');
+    if (fin >= 40) return stateOf('consolidacion');
+    const scores = [['part', (P - 1) / 9], ['time', (D - 1) / 9], ['tech', 1 - (T - 1) / 9]];
+    const weakest = scores.reduce(function (a, b) { return b[1] < a[1] ? b : a; })[0];
+    const base = C.construccion;
+    return { key: 'construccion', emoji: base.emoji, title: base.title, tone: base.tone, tag: base.tag,
+      diagnosis: base[weakest].diagnosis, reflection: base[weakest].reflection };
+  }
+
+  // ---- Estado ----
+  let C = null;
+  let values = { tech: 5, part: 5, time: 5 };
+  let sim = null, step = 0, timer = null, done = false, prev = null, statusSig = '';
+
+  function months(v) { return v * C.mesesPorPunto; }
+  function fill(text) { return text.replace(/\{retiro\}/g, String(sim.R)); }
+  function tierText(control, value) {
+    for (let i = 0; i < control.niveles.length; i++) if (value <= control.niveles[i].hasta) return control.niveles[i].texto;
+    return control.niveles[control.niveles.length - 1].texto;
+  }
+  function band(value) { return value >= 70 ? 'alto' : value >= 35 ? 'medio' : 'bajo'; }
+  function toneFor(level) { return level === 'alto' ? 'good' : level === 'medio' ? 'warn' : 'bad'; }
+  function runLabel() {
+    return C.controles.map(function (ctl) {
+      return ctl.corto + ' ' + (ctl.id === 'time' ? months(values.time) + ' ' + C.unidadPlural : values[ctl.id]);
+    }).join(' · ');
+  }
+
+  function setup() {
+    stop();
+    sim = simulate(values, C.duracion, C.mesesPorPunto);
+    sim.label = runLabel();
+    step = 0; done = false; statusSig = '';
+    $('play').textContent = 'Empezar'; $('play').disabled = false; $('skip').disabled = false;
+    paintRun(); paintStatus(); paintMeters(); drawChart();
+  }
+  function archive() {
+    if (sim && step > 0) {
+      prev = { F: sim.F.slice(0, step + 1), label: sim.label };
+      $('prevNote').hidden = false;
+      $('prevNote').textContent = 'Anterior: ' + prev.label;
+      buildKeys();
+    }
+  }
+  function tick() {
+    if (step >= C.duracion) { finish(); return; }
+    step++;
+    paintRun(); paintStatus(); paintMeters(); drawChart();
+    if (step >= C.duracion) finish();
+  }
+  function finish() {
+    done = true; stop();
+    $('play').textContent = 'Terminó'; $('play').disabled = true; $('skip').disabled = true;
+    paintStatus();
+  }
+  function start() { if (done) return; timer = setInterval(tick, TICK); $('play').textContent = 'Pausa'; }
+  function stop() {
+    clearInterval(timer); timer = null;
+    if (!done) $('play').textContent = step ? 'Seguir' : 'Empezar';
+  }
+
+  // ---- Pintado ----
+  function paintControl(id) {
+    const value = values[id];
+    const control = C.controles.filter(function (item) { return item.id === id; })[0];
+    const texto = tierText(control, value);
+    $('val-' + id).textContent = String(id === 'time' ? months(value) : value);
+    $('tier-' + id).textContent = texto;
+    const range = $('range-' + id);
+    range.value = String(value);
+    range.style.setProperty('--f', String((value - 1) / 9));
+    range.setAttribute('aria-valuenow', String(value));
+    range.setAttribute('aria-valuetext', (id === 'time' ? months(value) + ' ' + C.unidadPlural : value + ' de 10') + '. ' + texto);
+    for (let n = 1; n <= 10; n++) $('tick-' + id + '-' + n).classList.toggle('on', n === value);
+  }
+  function paintRun() {
+    $('stepNow').textContent = String(step);
+    $('progressFill').style.width = (100 * step / C.duracion) + '%';
+    $('progressMark').style.left = (100 * Math.min(sim.R, C.duracion) / C.duracion) + '%';
+    $('progressLegend').textContent = C.lineas.retiro + ': ' + C.unidadTiempo.toLowerCase() + ' ' + sim.R + '.';
+  }
+  function statusCard(state, eyebrow, tag, diagnosis, reflection, label) {
+    return h('section', { class: 'tone-' + state.tone + ' status' + (state.key === 'elefante' ? ' shake' : '') }, [
+      h('p', { class: 'eyebrow', text: eyebrow }),
+      h('div', { class: 'status-row' }, [
+        h('div', { class: 'emoji emoji-pop', 'aria-hidden': 'true', text: state.emoji }),
+        h('div', null, [h('h2', { text: state.title }), h('span', { class: 'tag', text: tag })])
+      ]),
+      h('p', { class: 'diagnosis', text: diagnosis }),
+      h('div', { class: 'reflect' }, [
+        h('p', { class: 'eyebrow', text: label }),
+        h('p', { class: 'q', text: reflection })
+      ])
+    ]);
+  }
+  function paintStatus() {
+    let sig, node;
+    if (done) {
+      const state = classify(values, sim);
+      sig = 'fin:' + state.key + state.diagnosis;
+      node = statusCard(state, 'Resultado al ' + C.unidadTiempo.toLowerCase() + ' ' + C.duracion, state.tag, state.diagnosis, state.reflection, 'Para reflexionar');
+    } else {
+      const k = C.enCurso, after = step > sim.R;
+      sig = 'curso:' + (after ? 1 : 0) + sim.R;
+      node = statusCard({ key: 'curso', tone: k.tone, emoji: k.emoji, title: k.title },
+        'Estado del proyecto', after ? k.tagDespues : k.tagAntes, fill(after ? k.despues : k.antes), k.reflection, 'Para predecir');
+    }
+    if (sig === statusSig) return;
+    statusSig = sig;
+    $('status').replaceChildren(node);
+  }
+  function paintMeters() {
+    C.medidores.forEach(function (meter) {
+      const value = Math.round(sim[SERIES[meter.id]][step]);
+      const level = band(value);
+      $('gauge-' + meter.id).className = 'tone-' + toneFor(level) + ' gauge';
+      $('num-' + meter.id).textContent = String(value);
+      $('band-' + meter.id).textContent = level;
+      const bar = $('meter-' + meter.id);
+      bar.setAttribute('aria-valuenow', String(value));
+      bar.setAttribute('aria-valuetext', value + ' por ciento, nivel ' + level);
+      const lit = Math.round(value / 100 * 20);
+      for (let i = 0; i < 20; i++) $('seg-' + meter.id + '-' + i).setAttribute('data-lit', i < lit ? 'true' : 'false');
+    });
+    const ex = Math.round(sim.exigencia);
+    $('need').style.left = ex + '%';
+    $('needText').textContent = 'Marca: ' + C.lineas.exigencia.toLowerCase() + ' (' + ex + ' %).';
+  }
+
+  // ---- Construcción de la interfaz ----
+  function buildControls() {
+    const list = $('controlList');
+    list.replaceChildren();
+    C.controles.forEach(function (control) {
+      const id = control.id;
+      const value = values[id];
+      const ticks = h('div', { class: 'ticks', 'aria-hidden': 'true' });
+      for (let n = 1; n <= 10; n++) {
+        ticks.appendChild(h('span', { id: 'tick-' + id + '-' + n, class: n === value ? 'on' : '',
+          style: 'left:calc(11px + (100% - 22px) * ' + ((n - 1) / 9) + ')', text: String(id === 'time' ? months(n) : n) }));
+      }
+      const range = h('input', { id: 'range-' + id, class: 'range', type: 'range', min: '1', max: '10', step: '1', value: String(value),
+        'aria-valuemin': '1', 'aria-valuemax': '10' });
+      range.addEventListener('input', function () {
+        values[id] = Number(range.value);
+        paintControl(id);
+        archive();
+        setup();
+      });
+      const isTime = id === 'time';
+      list.appendChild(h('div', { class: 'ctl' }, [
+        h('div', { class: 'ctl-top' }, [
+          h('label', { for: 'range-' + id, class: 'ctl-label', text: control.label }),
+          h('output', { for: 'range-' + id, class: 'ctl-value' }, [
+            h('span', { id: 'val-' + id, text: '' }),
+            h('span', { class: 'unit', text: isTime ? ' ' + C.unidadPlural : '/10' })
+          ])
+        ]),
+        h('p', { id: 'tier-' + id, class: 'tier', text: '' }),
+        range,
+        ticks,
+        h('div', { class: 'ends' }, [
+          h('span', null, [h('b', { text: isTime ? String(months(1)) : '1' }), ' ' + control.low]),
+          h('span', { class: 'right' }, [h('b', { text: isTime ? String(months(10)) : '10' }), ' ' + control.high])
+        ])
+      ]));
+      paintControl(id);
+    });
+  }
+  function buildMeters() {
+    const list = $('meters');
+    list.replaceChildren();
+    C.medidores.forEach(function (meter) {
+      const segs = h('div', { id: 'meter-' + meter.id, role: 'meter', class: 'segs series', 'aria-label': meter.label,
+        'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0', style: '--series:var(' + SERIES_VAR[meter.id] + ')' });
+      for (let i = 0; i < 20; i++) segs.appendChild(h('span', { id: 'seg-' + meter.id + '-' + i, class: 'seg', style: 'transition-delay:' + (i * 8) + 'ms' }));
+      const isCap = meter.id === 'capacidad';
+      list.appendChild(h('div', { id: 'gauge-' + meter.id, class: 'gauge' }, [
+        h('div', { class: 'meter-top' }, [
+          h('div', null, [
+            h('p', { class: 'meter-name' }, [h('span', { class: 'swatch', style: 'background:var(' + SERIES_VAR[meter.id] + ')', 'aria-hidden': 'true' }), meter.label]),
+            h('p', { class: 'meter-sub', text: meter.sub })
+          ]),
+          h('div', { class: 'meter-score' }, [
+            h('span', { id: 'band-' + meter.id, class: 'band-pill', text: '' }),
+            h('span', { class: 'meter-num' }, [h('span', { id: 'num-' + meter.id, text: '0' }), h('span', { class: 'unit', text: '%' })])
+          ])
+        ]),
+        h('div', { class: 'segs-wrap' }, [segs, isCap ? h('span', { id: 'need', class: 'need', 'aria-hidden': 'true' }) : null]),
+        h('div', { class: 'scale', 'aria-hidden': 'true' }, [
+          h('span', { text: '0' }), h('span', { text: '25' }), h('span', { text: '50' }), h('span', { text: '75' }), h('span', { text: '100' })
+        ]),
+        isCap ? h('p', { id: 'needText', class: 'need-text', text: '' }) : null
+      ]));
+    });
+  }
+  function buildKeys() {
+    const keys = $('keys');
+    const cls = { funcionamiento: 'k-func', confianza: 'k-conf', capacidad: 'k-cap' };
+    const order = ['funcionamiento', 'confianza', 'capacidad'];
+    keys.replaceChildren();
+    order.forEach(function (id) {
+      const m = C.medidores.filter(function (x) { return x.id === id; })[0];
+      keys.appendChild(h('span', null, [h('i', { class: cls[id] }), m.label]));
+    });
+    if (prev) keys.appendChild(h('span', null, [h('i', { class: 'dash' }), 'Funcionamiento anterior']));
+  }
+
+  // ---- Gráfico ----
+  const cv = $('chart'), ctx = cv.getContext('2d');
+  function tok(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function drawChart() {
+    if (!sim) return;
+    const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, hh = cv.clientHeight;
+    if (!w) return;
+    cv.width = w * dpr; cv.height = hh * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, hh);
+    const padL = 34, padR = 10, padT = 14, padB = 26, pw = w - padL - padR, ph = hh - padT - padB, dur = C.duracion;
+    const X = function (s) { return padL + pw * s / dur; }, Y = function (v) { return padT + ph * (1 - v / 100); };
+    const body = tok('--font-body');
+    ctx.font = '12px ' + body; ctx.fillStyle = tok('--muted'); ctx.strokeStyle = tok('--line'); ctx.lineWidth = 1;
+    [0, 50, 100].forEach(function (v) {
+      ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(w - padR, Y(v)); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(String(v), padL - 6, Y(v));
+    });
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    const tickStep = dur <= 36 ? 6 : dur <= 72 ? 12 : 24;
+    for (let s = 0; s <= dur; s += tickStep) ctx.fillText(s === 0 ? C.unidadTiempo.toLowerCase() + ' 0' : String(s), X(s), hh - padB + 7);
+    // exigencia de la tecnología
+    ctx.setLineDash([6, 5]); ctx.strokeStyle = tok('--s-cap'); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, Y(sim.exigencia)); ctx.lineTo(w - padR, Y(sim.exigencia)); ctx.stroke();
+    // retiro del equipo
+    const xr = X(Math.min(sim.R, dur));
+    ctx.strokeStyle = tok('--ink'); ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(xr, padT); ctx.lineTo(xr, padT + ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '600 11.5px ' + body; ctx.textBaseline = 'top';
+    const rightRoom = w - padR - xr > 150;
+    ctx.fillStyle = tok('--ink'); ctx.textAlign = rightRoom ? 'left' : 'right';
+    ctx.fillText(C.lineas.retiro, xr + (rightRoom ? 6 : -6), padT);
+    ctx.fillStyle = tok('--s-cap'); ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText(C.lineas.exigencia, w - padR - 2, Y(sim.exigencia) - 3);
+    function line(d, upto, color, width) {
+      ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round'; ctx.beginPath();
+      for (let i = 0; i <= upto && i < d.length; i++) { if (i) ctx.lineTo(X(i), Y(d[i])); else ctx.moveTo(X(i), Y(d[i])); }
+      ctx.stroke();
+    }
+    if (prev) { ctx.setLineDash([5, 4]); line(prev.F, prev.F.length - 1, tok('--ghost'), 2); ctx.setLineDash([]); }
+    line(sim.C, step, tok('--s-conf'), 2);
+    line(sim.K, step, tok('--s-cap'), 2);
+    line(sim.F, step, tok('--s-func'), 3.5);
+    ctx.fillStyle = tok('--s-func'); ctx.beginPath(); ctx.arc(X(step), Y(sim.F[step]), 4.5, 0, 7); ctx.fill();
+  }
+  window.addEventListener('resize', drawChart);
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawChart); } catch (e) {}
+  new MutationObserver(drawChart).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---- Marco teórico ----
+  let onModalKey = null;
+  function closeTheory() {
+    const modal = $('modal');
+    if (onModalKey) document.removeEventListener('keydown', onModalKey);
+    onModalKey = null;
+    modal.hidden = true; modal.replaceChildren(); document.body.style.overflow = '';
+    $('openTheory').focus();
+  }
+  function openTheory() {
+    const t = C.teoria, modal = $('modal');
+    const close = h('button', { type: 'button', class: 'btn-ghost', 'aria-label': 'Cerrar marco teórico', text: 'Cerrar' });
+    close.addEventListener('click', closeTheory);
+    const principles = h('div', { class: 'principles' });
+    t.principios.forEach(function (p) { principles.appendChild(h('div', { class: 'principle' }, [h('h3', { text: p.titulo }), h('p', { text: p.texto })])); });
+    const rules = h('dl');
+    t.reglas.forEach(function (r) { rules.appendChild(h('div', { class: 'rule' }, [h('dt', { text: r.nombre }), h('dd', { text: r.condicion })])); });
+    modal.replaceChildren(h('div', { class: 'modal-panel', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'theory-title' }, [
+      h('div', { class: 'modal-head' }, [h('div', null, [h('p', { class: 'eyebrow', text: t.eyebrow }), h('h2', { id: 'theory-title', text: t.titulo })]), close]),
+      h('p', { class: 'intro', text: t.intro }),
+      principles,
+      h('div', { class: 'callout' }, [h('h3', { text: t.solucionismoTitulo }), h('p', { text: t.solucionismo })]),
+      h('h3', { text: t.modeloTitulo }),
+      rules,
+      h('p', { class: 'nota', text: t.nota })
+    ]));
+    modal.hidden = false; document.body.style.overflow = 'hidden'; close.focus();
+    onModalKey = function (ev) {
+      if (ev.key === 'Escape') { ev.preventDefault(); closeTheory(); return; }
+      if (ev.key !== 'Tab') return;
+      const items = modal.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onModalKey);
+  }
+  $('openTheory').addEventListener('click', openTheory);
+  $('modal').addEventListener('mousedown', function (ev) { if (ev.target === ev.currentTarget) closeTheory(); });
+
+  // ---- Aplicar configuración ----
+  function apply(cfg) {
+    if (!$('modal').hidden) closeTheory();
+    stop();
+    C = cfg;
+    values = { tech: cfg.inicial.tech, part: cfg.inicial.part, time: cfg.inicial.time };
+    prev = null; $('prevNote').hidden = true;
+    document.title = cfg.titulo;
+    $('eyebrow').textContent = cfg.eyebrow;
+    $('titulo').textContent = cfg.titulo;
+    $('bajada').textContent = cfg.bajada;
+    $('openTheory').textContent = cfg.botonTeoria;
+    $('controlsTitle').textContent = cfg.controlesTitulo;
+    $('controlsNote').textContent = cfg.controlesNota;
+    $('dashTitle').textContent = cfg.dashboardTitulo;
+    $('dashNote').textContent = cfg.dashboardNota;
+    $('chartTitle').textContent = cfg.graficoTitulo;
+    $('stepUnit').textContent = cfg.unidadTiempo;
+    $('stepMax').textContent = String(cfg.duracion);
+    buildControls(); buildMeters(); buildKeys();
+    setup();
+  }
+
+  $('play').addEventListener('click', function () { if (done) return; if (timer) stop(); else start(); });
+  $('skip').addEventListener('click', function () { if (done) return; stop(); step = C.duracion; paintRun(); paintMeters(); drawChart(); finish(); });
+  $('reset').addEventListener('click', function () { archive(); setup(); });
+
+  // ---- Panel de configuración ----
+  const msg = function (text, err) { $('cfgMsg').textContent = text; $('cfgMsg').className = 'msg ' + (err ? 'err' : 'ok'); };
+  function readPanel() {
+    const txt = $('cfgText').value.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    let cfg;
+    try { cfg = JSON.parse(txt); }
+    catch (e) { msg('El texto no se pudo leer. Revisá que esté completo, desde la primera llave { hasta la última }.', true); return null; }
+    const errs = validate(cfg);
+    if (errs.length) { msg(errs.join(' '), true); return null; }
+    return { cfg: cfg };
+  }
+  $('cfgToggle').addEventListener('click', function () {
+    const panel = $('cfg');
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) $('cfgText').value = C ? JSON.stringify(C, null, 2) : ORIGINAL_TEXT;
+  });
+  $('cfgApply').addEventListener('click', function () {
+    const read = readPanel(); if (!read) return;
+    apply(read.cfg);
+    msg('Listo. Ya estás usando la nueva configuración. Si cerrás la página se pierde: descargala para conservarla.');
+  });
+  $('cfgOrig').addEventListener('click', function () {
+    let cfg;
+    try { cfg = JSON.parse(ORIGINAL_TEXT); } catch (e) { msg('La configuración original de este archivo no se pudo leer.', true); return; }
+    const errs = validate(cfg); if (errs.length) { msg(errs.join(' '), true); return; }
+    apply(cfg); $('cfgText').value = JSON.stringify(cfg, null, 2);
+    msg('Volviste a la configuración original del archivo.');
+  });
+  $('cfgSave').addEventListener('click', function () {
+    const read = readPanel(); if (!read) return;
+    apply(read.cfg);
+    const html = PRISTINE.replace(/(<script id="config" type="application\/json">)[\s\S]*?(<\/script>)/, '$1\n' + JSON.stringify(read.cfg, null, 2) + '\n$2');
+    try {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      a.download = read.cfg.titulo.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      msg('Se descargó el archivo ' + a.download + '. Abrilo con el navegador, funciona sin conexión.');
+    } catch (e) { msg('Este navegador no permitió la descarga. Copiá el texto de configuración y guardalo.', true); }
+  });
+
+  // ---- Arranque ----
+  function banner(errs) {
+    const p = document.createElement('p');
+    p.className = 'banner';
+    p.textContent = 'Hay un problema en la configuración de este archivo: ' + errs.join(' ') + ' Abrí Configuración, abajo de todo, para corregirla.';
+    document.body.insertBefore(p, document.body.firstChild);
+  }
+  function parseCfg(text) { try { return JSON.parse(text); } catch (e) { return null; } }
+  const initial = parseCfg(ORIGINAL_TEXT);
+  const errs = initial ? validate(initial) : ['La configuración del archivo no se pudo leer.'];
+  if (errs.length) {
+    banner(errs);
+    $('cfg').hidden = false; $('cfgText').value = ORIGINAL_TEXT;
+    const fallback = parseCfg(DEFAULT_TEXT);
+    if (fallback && !validate(fallback).length) apply(fallback);
+  } else apply(initial);
+})();
+</script>
+</body>
+</html>
