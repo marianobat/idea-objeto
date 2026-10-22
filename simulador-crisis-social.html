@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión de una crisis social — Simulador</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#172b35;background:#eef3f6}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1120px;margin:auto;padding:32px 18px 60px}header{margin-bottom:24px}.over{font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;color:#416879;font-weight:800}h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:5px 0 10px}p{line-height:1.55}.intro{max-width:780px;color:#4e6170}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:white;border:1px solid #d4dfe6;border-radius:16px;box-shadow:0 3px 14px #21384a09;padding:22px}h2{font-size:1.15rem;margin:0 0 18px}.control{padding:15px 0;border-top:1px solid #e2e9ef}.control:first-of-type{border-top:0;padding-top:2px}.ctlhead{display:flex;justify-content:space-between;gap:15px;font-weight:750}.value{font-variant-numeric:tabular-nums;color:#08718a;font-size:1.25rem}.control input{width:100%;accent-color:#08718a;margin:18px 0 4px;cursor:pointer}.ends{display:flex;justify-content:space-between;gap:15px;color:#506876;font-size:.76rem}.ends span{max-width:46%}.ends span:last-child{text-align:right}.meter{margin:0 0 20px}.meter:last-child{margin-bottom:0}.meterhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.meterhead strong{font-size:.98rem}.score{font-weight:800;font-variant-numeric:tabular-nums}.track{height:17px;background:#e5ecf0;border-radius:12px;overflow:hidden}.fill{height:100%;border-radius:12px;transition:width .16s,background .16s}.scale{display:flex;justify-content:space-between;font-size:.72rem;color:#697b86;margin-top:5px}.outcome{grid-column:1/-1;background:#f7fbfd;border:1px solid #b8d6e2}.outcome h2{font-size:1.45rem;margin:4px 0 9px}.outcome p{margin:0;color:#3d5666}.tag{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:#47667a}.action{border:1px solid #12647c;background:#12647c;color:#fff;border-radius:10px;padding:12px 16px;font-weight:750;cursor:pointer;margin:18px 0 0}.action:hover{background:#0a5369}.details{margin-top:15px}.details h3{font-size:1.05rem}.details ul{padding-left:20px;line-height:1.6}.details li{margin:7px 0}.summary{font-size:.92rem;color:#465f6c}.tiny{font-size:.78rem;color:#657985}button:focus-visible,input:focus-visible{outline:3px solid #efb54a;outline-offset:3px}@media(max-width:760px){.layout{grid-template-columns:1fr}.outcome{grid-column:auto}.panel{padding:18px}}</style></head><body><div class="wrap">
+<header><div class="over">Simulador de decisiones · Crisis social</div><h1>Gestión de una crisis por falta de servicios esenciales</h1><p class="intro">Sos parte del gobierno provincial. Tras una semana sin electricidad ni agua en la mitad de la ciudad, hay piquetes y un acampe frente a la gobernación. Ajustá las tres decisiones y observá cómo cambian los resultados.</p></header>
+<main class="layout"><section class="panel"><h2>Decisiones del gobierno</h2><div id="controls"></div></section>
+<section class="panel"><h2>Resultados de la decisión</h2><div id="meters" aria-live="polite"></div></section>
+<section class="panel outcome" aria-live="polite"><div class="tag">Estado de la crisis</div><h2 id="stateTitle"></h2><p id="stateText"></p><p id="stateQuestion" style="margin-top:12px;font-weight:600"></p></section></main>
+<button class="action" id="aboutButton" type="button" aria-expanded="false" aria-controls="details">Cómo funciona el modelo</button>
+<section class="panel details" id="details" hidden></section></div>
+<script>
+'use strict';
+const MODEL={
+ controls:[
+  {id:'dialogo',name:'Apertura al diálogo y negociación',low:'Negativa a negociar; sin canales con referentes barriales',high:'Mesa permanente, concesiones parciales y reuniones diarias'},
+  {id:'seguridad',name:'Despliegue de fuerzas de seguridad',low:'Repliegue policial para evitar confrontaciones',high:'Fuerte presencia de fuerzas antimotines, listas para despejar'},
+  {id:'asistencia',name:'Recursos de asistencia rápida',low:'Asistencia mínima o nula',high:'Operativo masivo con agua, generadores y compensaciones'}
+ ],
+ meters:[
+  {id:'paz',name:'Paz social / Gobernabilidad',lowGood:false,weights:{dialogo:1,seguridad:-1,asistencia:1}},
+  {id:'fiscal',name:'Costo fiscal / Gasto de emergencia',lowGood:true,weights:{dialogo:1,seguridad:1,asistencia:2}},
+  {id:'legitimidad',name:'Legitimidad política / Aceptación pública',lowGood:false,weights:{dialogo:1,seguridad:0,asistencia:1}}
+ ],
+ // These are ordered: the first matching outcome wins.
+ endings:[
+  {name:'Escalada represiva',tone:'bad',conditions:[{id:'seguridad',op:'high'},{id:'dialogo',op:'low'},{id:'asistencia',op:'low'}],description:'Represión, heridos, repudio generalizado en medios, caída de legitimidad, profundización del conflicto y renuncia del gabinete.',question:'¿Se puede gobernar una crisis social únicamente a través de la fuerza policial sin atender las causas materiales ni habilitar canales políticos?'},
+  {name:'Colapso fiscal / Extorsión',tone:'bad',conditions:[{id:'seguridad',op:'low'},{id:'dialogo',op:'high'},{id:'asistencia',op:'max'}],description:'El Estado cede ante todas las demandas, agota el presupuesto del año y los cortes de ruta se vuelven un mecanismo sistemático de presión.',question:'¿Dónde está el límite entre la escucha democrática y la pérdida de autoridad del Estado frente a la extorsión corporativa o sectorial?'},
+  {name:'Gestión equilibrada',tone:'good',conditions:[{id:'dialogo',op:'high'},{id:'asistencia',op:'moderateOrHigh'},{id:'seguridad',op:'low'}],description:'La protesta se desactiva pacíficamente, se asiste a los afectados y se recupera la paz social con un gasto fiscal razonable.',question:'¿Cómo se logra coordinar la respuesta logística con la habilidad política para desactivar una crisis antes de que escale?'}
+ ],
+ excluded:'La deuda externa provincial, la corrupción estructural de las empresas privadas prestatarias y las disputas internas del partido gobernante. El modelo se limita a decisiones tácticas durante la crisis inmediata.',
+ thresholds:{lowMax:4,highMin:7,moderateMin:5,max:10},
+ initial:{dialogo:5,seguridad:5,asistencia:5}
+};
+const byId=id=>document.getElementById(id);
+const values={...MODEL.initial};
+const controlName=id=>MODEL.controls.find(x=>x.id===id).name;
+const wordWeight=w=>({'2':'sube mucho','1':'sube','0':'no cambia','-1':'baja','-2':'baja mucho'})[String(w)];
+function match(value,op){const t=MODEL.thresholds;return op==='low'?value<=t.lowMax:op==='high'?value>=t.highMin:op==='moderateOrHigh'?value>=t.moderateMin:op==='max'?value===t.max:false}
+function conditionLabel(c){const t=MODEL.thresholds;return controlName(c.id)+' '+(c.op==='low'?'≤ '+t.lowMax+' (poco)':c.op==='high'?'≥ '+t.highMin+' (mucho)':c.op==='moderateOrHigh'?'≥ '+t.moderateMin+' (moderado/alto)':'= '+t.max+' (máximo)')}
+function calculate(m){const entries=Object.entries(m.weights);const abs=entries.reduce((s,[,w])=>s+Math.abs(w),0);if(abs===0)return 50;const contribution=entries.reduce((s,[id,w])=>s+w*(values[id]-5.5)/4.5,0);return Math.max(0,Math.min(100,50+(50/abs)*contribution))}
+function worst(){// Compare harmful oriented effects; ties retain the stated slider order.
+ const ranked=MODEL.controls.map((c,i)=>{let harm=0;for(const m of MODEL.meters){const denom=Object.values(m.weights).reduce((s,w)=>s+Math.abs(w),0);if(!denom)continue;const oriented=m.lowGood?-1:1;const contribution=oriented*m.weights[c.id]*(values[c.id]-5.5)/4.5/denom;if(contribution<0)harm-=contribution}return {id:c.id,harm,i}});ranked.sort((a,b)=>b.harm-a.harm||a.i-b.i);return controlName(ranked[0].id)}
+function render(){
+ for(const c of MODEL.controls){byId('n-'+c.id).textContent=values[c.id]+'/10'}
+ byId('meters').replaceChildren();
+ for(const m of MODEL.meters){const n=calculate(m),good=m.lowGood?100-n:n,color=good>=65?'#27855d':good>=35?'#c58a21':'#c34848';const root=document.createElement('div');root.className='meter';const top=document.createElement('div');top.className='meterhead';const strong=document.createElement('strong');strong.textContent=m.name;const score=document.createElement('span');score.className='score';score.textContent=Math.round(n)+'/100';top.append(strong,score);const track=document.createElement('div');track.className='track';const fill=document.createElement('div');fill.className='fill';fill.style.width=n+'%';fill.style.background=color;track.append(fill);const scale=document.createElement('div');scale.className='scale';const left=document.createElement('span');left.textContent='0';const right=document.createElement('span');right.textContent='100';scale.append(left,right);const note=document.createElement('div');note.className='tiny';note.textContent=m.lowGood?'Conviene que sea bajo':'Conviene que sea alto';root.append(top,track,scale,note);byId('meters').append(root)}
+ const ending=MODEL.endings.find(e=>e.conditions.every(c=>match(values[c.id],c.op)));
+ byId('stateTitle').textContent=ending?ending.name:'Zona intermedia';byId('stateText').textContent=ending?ending.description:'La decisión que más perjudica a los resultados es: '+worst()+'.';byId('stateQuestion').textContent=ending?ending.question:'';
+}
+function explain(){const root=byId('details');root.replaceChildren();const heading=(str)=>{const h=document.createElement('h3');h.textContent=str;root.append(h)};const add=(str)=>{const p=document.createElement('p');p.className='summary';p.textContent=str;root.append(p)};
+ heading('Relaciones usadas en el cálculo');for(const c of MODEL.controls){const bits=MODEL.meters.map(m=>m.name+': '+wordWeight(m.weights[c.id]));add('Cuando aumenta '+c.name+': '+bits.join('; ')+'.')}
+ heading('Reglas de los finales (se evalúan en este orden)');const ul=document.createElement('ul');for(const e of MODEL.endings){const li=document.createElement('li');li.textContent=e.name+': '+e.conditions.map(conditionLabel).join(' Y ')+'.';ul.append(li)}root.append(ul);
+ add('Si se cumplen varios finales, se muestra el primero. Si no se cumple ninguno, se muestra Zona intermedia y la decisión con mayor aporte perjudicial a los indicadores, considerando que el costo fiscal conviene bajo.');
+ heading('Cálculo de los medidores');add('Cada deslizador va de 1 a 10. Pesos: sube mucho = 2; sube = 1; no cambia = 0; baja = −1; baja mucho = −2. Para cada resultado: aporte = peso × (posición − 5,5) / 4,5; escala = 50 / suma de valores absolutos de los pesos; resultado = 50 + escala × suma de aportes. Los medidores van de 0 a 100. El color considera si es preferible un valor alto o bajo.');
+ heading('Qué deja afuera el modelo');add(MODEL.excluded)
+}
+function init(){for(const c of MODEL.controls){const el=document.createElement('div');el.className='control';const head=document.createElement('div');head.className='ctlhead';const name=document.createElement('span');name.textContent=c.name;const n=document.createElement('span');n.className='value';n.id='n-'+c.id;head.append(name,n);const range=document.createElement('input');range.type='range';range.min='1';range.max='10';range.step='1';range.value=values[c.id];range.setAttribute('aria-label',c.name);range.addEventListener('input',()=>{values[c.id]=Number(range.value);render()});const ends=document.createElement('div');ends.className='ends';const lo=document.createElement('span');lo.textContent='Poco: '+c.low;const hi=document.createElement('span');hi.textContent='Mucho: '+c.high;ends.append(lo,hi);el.append(head,range,ends);byId('controls').append(el)}explain();byId('aboutButton').addEventListener('click',()=>{const hidden=!byId('details').hidden;byId('details').hidden=hidden;byId('aboutButton').setAttribute('aria-expanded',String(!hidden))});render()}init();
+</script></body></html>
